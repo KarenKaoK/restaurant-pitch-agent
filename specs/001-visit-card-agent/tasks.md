@@ -94,25 +94,25 @@ At each **Checkpoint**: run `uv run pytest` (all tests must pass), stop, wait fo
 
 ### Short cards (section B)
 
-- [ ] T027 [P] [US2] Write tests TC-E01–TC-E07 in `tests/unit/test_short_cards.py`, plus TC-D02 at agent level (unknown ID → `UnknownRestaurantError`, no card); TC-E06 passes an inline stub LLM whose `generate` fails the test if called. Confirm they fail
-- [ ] T028 [US2] Implement `build_short_card(restaurant)` and `generate_card(restaurant_id, data, llm)` in `src/pitch_agent/agent.py` until T027 passes, covering only the unknown-ID and closed/chain branches; the eligible branch is completed in T046 (data-model.md `RestaurantSummary.reviews_analysed` and `RestaurantSummary.description` null, `VisitCard.decision_reasons` codes, `VisitCard.opening_pitch` null, empty lists; FR-020a)
+- [X] T027 [P] [US2] Write tests TC-E01–TC-E07 in `tests/unit/test_short_cards.py`, plus TC-D02 at agent level (unknown ID → `UnknownRestaurantError`, no card); TC-E06 passes an inline stub LLM whose `generate` fails the test if called. Confirm they fail
+- [X] T028 [US2] Implement `build_short_card(restaurant)` and `generate_card(restaurant_id, data, llm)` in `src/pitch_agent/agent.py` until T027 passes, covering only the unknown-ID and closed/chain branches; the eligible branch is completed in T046 (data-model.md `RestaurantSummary.reviews_analysed` and `RestaurantSummary.description` null, `VisitCard.decision_reasons` codes, `VisitCard.opening_pitch` null, empty lists; FR-020a)
 
 ### Plain-text card (section J)
 
-- [ ] T029 [P] [US2] Write tests TC-T01–TC-T09 in `tests/unit/test_render.py`, building the input card dicts in the tests (a valid F01 `recommend` card with a prerequisite and a candidate not selected, an `insufficient_evidence` card, an F02 short card, a card with general questions). Confirm they fail
-- [ ] T030 [US2] Implement `render_text(card)` in `src/pitch_agent/render.py` until T029 passes, following the plain-text layout and fixed wording of [contracts/visit-card.md](contracts/visit-card.md) (labels from data-model.md `DiscoveryQuestion.based_on_reviews` and `Recommendation.required_by`; no review dates or reviewer data)
+- [X] T029 [P] [US2] Write tests TC-T01–TC-T09 in `tests/unit/test_render.py`, building the input card dicts in the tests (a valid F01 `recommend` card with a prerequisite and a candidate not selected, an `insufficient_evidence` card, an F02 short card, a card with general questions). Confirm they fail
+- [X] T030 [US2] Implement `render_text(card)` in `src/pitch_agent/render.py` until T029 passes, following the plain-text layout and fixed wording of [contracts/visit-card.md](contracts/visit-card.md) (labels from data-model.md `DiscoveryQuestion.based_on_reviews` and `Recommendation.required_by`; no review dates or reviewer data)
 
 ### Deterministic checks 1–18 (section I)
 
-- [ ] T031 [P] [US2] Create the valid F01 card used by the check tests in `tests/fixtures/cards/valid_f01.json` (decision `recommend`, all 18 checks pass by construction, matches contracts/visit-card.md)
-- [ ] T032 [US2] Write tests TC-K00–TC-K19 in `tests/unit/test_checks.py` for `run_checks(card_dict, data) -> list[CheckResult]`, deriving each failing card from `valid_f01.json` (or a short card for TC-K08*); TC-K17d covers a pain point without evidence (FR-025 item 17); TC-K03 reuses section H through check 3. Confirm they fail
-- [ ] T033 [US2] Implement check 1 (structure: all keys of contracts/visit-card.md present, valid data-model.md `VisitCard.decision`, `PainPoint.confidence`, `Recommendation.role`, `PainPoint.evidence` non-empty) and the `run_checks` driver in `src/pitch_agent/checks.py`: all 18 checks always run; a check that cannot read a field reports "not evaluated: invalid structure" (data-model.md `CheckResult.check_id`, `CheckResult.reasons`; TC-K19)
-- [ ] T034 [US2] Implement checks 2–9 in `src/pitch_agent/checks.py` (evidence against the review dataset, catalog and `requires`, closed/chain and decision rules; FR-025 items 2–9) until their T032 tests pass
-- [ ] T035 [US2] Implement checks 10–18 in `src/pitch_agent/checks.py` (confidence, primary/prerequisite limits, question links, support counts, rank order, candidates, category membership, mapping coverage, category repetition; FR-025 items 10–18) until all T032 tests pass
+- [X] T031 [P] [US2] Create the valid F01 card used by the check tests in `tests/fixtures/cards/valid_f01.json` (decision `recommend`, all 18 checks pass by construction, matches contracts/visit-card.md)
+- [X] T032 [US2] Write tests TC-K00–TC-K19 in `tests/unit/test_checks.py` for `run_checks(card_dict, data) -> list[CheckResult]`, deriving each failing card from `valid_f01.json` (or a short card for TC-K08*); TC-K17d covers a pain point without evidence (FR-025 item 17); TC-K03 reuses section H through check 3. Confirm they fail
+- [X] T033 [US2] Implement check 1 (structure: all keys of contracts/visit-card.md present, valid data-model.md `VisitCard.decision`, `PainPoint.confidence`, `Recommendation.role`, `PainPoint.evidence` non-empty) and the `run_checks` driver in `src/pitch_agent/checks.py`: all 18 checks always run; a check that cannot read a field reports "not evaluated: invalid structure" (data-model.md `CheckResult.check_id`, `CheckResult.reasons`; TC-K19)
+- [X] T034 [US2] Implement checks 2–9 in `src/pitch_agent/checks.py` (evidence against the review dataset, catalog and `requires`, closed/chain and decision rules; FR-025 items 2–9) until their T032 tests pass
+- [X] T035 [US2] Implement checks 10–18 in `src/pitch_agent/checks.py` (confidence, primary/prerequisite limits, question links, support counts, rank order, candidates, category membership, mapping coverage, category repetition; FR-025 items 10–18) until all T032 tests pass
 
 ### Real-data short cards (section O, part)
 
-- [ ] T036 [P] [US2] Write tests TC-X04 and TC-X05 in `tests/regression/test_real_short_cards.py`: `generate_card` for R10 and R11 with `real_data_dir` and a stub LLM that fails if called; the card passes all 18 checks. They should pass with T028–T035 in place
+- [X] T036 [P] [US2] Write tests TC-X04 and TC-X05 in `tests/regression/test_real_short_cards.py`: `generate_card` for R10 and R11 with `real_data_dir` and a stub LLM that fails if called; the card passes all 18 checks. They should pass with T028–T035 in place
 
 **Checkpoint**: Short cards, plain text and checks work — run all tests, stop for owner review, propose a commit message (T027–T036).
 

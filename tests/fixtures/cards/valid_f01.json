@@ -1,0 +1,134 @@
+{
+  "schema_version": "1",
+  "restaurant": {
+    "restaurant_id": "F01",
+    "name": "Fixture Bistro",
+    "city": "Testcity",
+    "status": "unknown",
+    "segment": "independent",
+    "reviews_analysed": 6,
+    "description": "Bistro whose guests mention cash-only payment, long waits and order mistakes."
+  },
+  "decision": "recommend",
+  "decision_reasons": [],
+  "pain_points": [
+    {
+      "pain_point_id": "PP1",
+      "category_id": "c_cash",
+      "description": "Guests report that only cash is accepted.",
+      "confidence": "high",
+      "evidence": [
+        {
+          "review_id": "F01-001",
+          "quote": "only accept cash payments",
+          "text_source": "original"
+        },
+        {
+          "review_id": "F01-002",
+          "quote": "Cash only, so we had to find an ATM.",
+          "text_source": "translated"
+        }
+      ]
+    },
+    {
+      "pain_point_id": "PP2",
+      "category_id": "c_kitchen",
+      "description": "Guests report long waits for their food.",
+      "confidence": "medium",
+      "evidence": [
+        {
+          "review_id": "F01-003",
+          "quote": "waited two hours for our food",
+          "text_source": "original"
+        }
+      ]
+    },
+    {
+      "pain_point_id": "PP3",
+      "category_id": "c_order",
+      "description": "A guest reports a wrong bill and forgotten drinks.",
+      "confidence": "medium",
+      "evidence": [
+        {
+          "review_id": "F01-006",
+          "quote": "The bill was wrong and they forgot our drinks.",
+          "text_source": "original"
+        }
+      ]
+    },
+    {
+      "pain_point_id": "PP4",
+      "category_id": "c_none",
+      "description": "A guest found the soup cold.",
+      "confidence": "medium",
+      "evidence": [
+        {
+          "review_id": "F01-004",
+          "quote": "soup was cold and bland",
+          "text_source": "expanded"
+        }
+      ]
+    }
+  ],
+  "recommendations": [
+    {
+      "product_id": "dish-pay",
+      "name": "DISH Pay",
+      "role": "primary",
+      "required_by": [],
+      "pain_point_ids": [
+        "PP1"
+      ],
+      "supporting_review_ids": [
+        "F01-001",
+        "F01-002"
+      ],
+      "support_count": 2,
+      "confidence": "high"
+    },
+    {
+      "product_id": "dish-pos",
+      "name": "DISH POS",
+      "role": "primary",
+      "required_by": [],
+      "pain_point_ids": [
+        "PP2",
+        "PP3"
+      ],
+      "supporting_review_ids": [
+        "F01-003",
+        "F01-006"
+      ],
+      "support_count": 2,
+      "confidence": "medium"
+    }
+  ],
+  "candidates_not_selected": [],
+  "opening_pitch": "Several guests mention that they could only pay in cash, and some had a long wait or a mistake on the bill.",
+  "discovery_questions": [
+    {
+      "question": "How do guests usually want to pay?",
+      "pain_point_id": "PP1",
+      "category_id": null,
+      "based_on_reviews": true
+    },
+    {
+      "question": "How long does an order take on a busy evening?",
+      "pain_point_id": "PP2",
+      "category_id": null,
+      "based_on_reviews": true
+    },
+    {
+      "question": "How do orders get from the table to the kitchen and the bill?",
+      "pain_point_id": "PP3",
+      "category_id": null,
+      "based_on_reviews": true
+    },
+    {
+      "question": "How do you keep dishes warm before they reach the table?",
+      "pain_point_id": "PP4",
+      "category_id": null,
+      "based_on_reviews": true
+    }
+  ]
+}
