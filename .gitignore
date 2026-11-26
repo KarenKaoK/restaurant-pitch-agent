@@ -6,3 +6,6 @@
 .claude/*
 !.claude/skills/	
 
+
+# Data preparation by-product (not used by the agent or evaluation)
+data/eval/labels.csv
