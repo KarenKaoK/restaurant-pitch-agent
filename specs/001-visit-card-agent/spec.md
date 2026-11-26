@@ -28,6 +28,7 @@
 - Q: Do prerequisite products count in SC-004 and SC-005? → A: Yes. All recommended products, primary and prerequisite, count.
 - Q: Is an unknown category or a non-verbatim quote from the model a generation failure? → A: No. The card is produced and fails the deterministic checks, so the problem is visible in the evaluation report. Only unparseable output or a failed model call is a generation failure.
 - Q: Which gold-label rows are invalid, and what happens when one is found? → A: Also invalid: a duplicate restaurant row, a product in both `must_include` and `acceptable`, and a non-empty `must_include` when the decision is not `recommend`. If any row is invalid, the evaluation lists every invalid row and stops before running the agent.
+- Q: Which language model does the agent use, and is a paid API key required? → A: The model provider and model are configuration, not part of the business logic. v1 supports a local model (no API key) and a test stand-in; no paid API key is required to develop, test or run the agent. The evaluation report records the provider and the model actually used.
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -77,11 +78,11 @@ For some restaurants the right answer is "do not pitch a product". If the restau
 
 ### User Story 3 - Evaluation (Priority: P2)
 
-The project owner runs a single command that generates a visit card for every restaurant listed in the gold-label file, checks every card with the deterministic checks from constitution Principle VI, compares each card's decision and recommended products against the gold labels, and writes an evaluation report. The report records the git commit and model name so runs can be compared over time.
+The project owner runs a single command that generates a visit card for every restaurant listed in the gold-label file, checks every card with the deterministic checks from constitution Principle VI, compares each card's decision and recommended products against the gold labels, and writes an evaluation report. The report records the git commit, the LLM provider and the model name so runs can be compared over time.
 
 **Why this priority**: LLM output is not developed test-first, so this evaluation is the only way to measure whether the agent is good enough (constitution Principle VI). It depends on Stories 1 and 2 being in place.
 
-**Independent Test**: With a filled-in gold-label file, run the evaluation command once and verify that the report lists every labelled restaurant, the result of each deterministic check per card, the accuracy metrics in the Success Criteria, the git commit and the model name.
+**Independent Test**: With a filled-in gold-label file, run the evaluation command once and verify that the report lists every labelled restaurant, the result of each deterministic check per card, the accuracy metrics in the Success Criteria, the git commit, the LLM provider and the model name.
 
 **Acceptance Scenarios**:
 
@@ -89,7 +90,7 @@ The project owner runs a single command that generates a visit card for every re
 2. **Given** generated cards, **When** the evaluation runs, **Then** each card is checked against every deterministic check in FR-025 and the report shows pass/fail per check per card, with the failure reason.
 3. **Given** gold labels, **When** the evaluation runs, **Then** the report shows, per restaurant, the expected decision, the actual decision, the recommended products, which `must_include` products were missed, and which recommended products were outside `must_include` and `acceptable`.
 4. **Given** a completed run, **When** the owner opens the report, **Then** it shows the aggregate metrics SC-001 – SC-005 and whether each target is met.
-5. **Given** a completed run, **When** the owner opens the report, **Then** it shows the git commit and the model name used for the run.
+5. **Given** a completed run, **When** the owner opens the report, **Then** it shows the git commit, the LLM provider and the model name used for the run.
 6. **Given** a gold-label file with an invalid row (FR-028), **When** the evaluation runs, **Then** it lists every invalid row with its reason and stops before running the agent.
 
 ---
@@ -198,7 +199,7 @@ The project owner runs a single command that generates a visit card for every re
 - **FR-029**: The evaluation MUST run the agent exactly once per labelled restaurant.
 - **FR-030**: The evaluation MUST run all FR-025 checks on every card and report pass/fail per check per card.
 - **FR-031**: The evaluation MUST compute and report the metrics in SC-001 – SC-005 and whether each target is met.
-- **FR-032**: The evaluation report MUST record the git commit, the model name and the run date, and MUST include the generated cards (or a reference to them) so results can be reviewed.
+- **FR-032**: The evaluation report MUST record the git commit, the LLM provider, the model name and the run date, and MUST include the generated cards (or a reference to them) so results can be reviewed.
 - **FR-033**: The evaluation MUST NOT modify raw data or the gold-label file.
 
 ### Key Entities
@@ -214,7 +215,7 @@ The project owner runs a single command that generates a visit card for every re
 - **Candidate Not Selected**: a product that qualifies as primary but ranked below the top 2. Has product ID, confidence, support count and addressed pain points. Not a recommendation.
 - **Discovery Question**: a question for the rep to ask the owner, linked to the pain point it tests, or — when the card has no pain points — a general question linked to a pain-point category and labelled "Not based on reviews".
 - **Gold Label**: the owner's expected result for one restaurant: decision, `must_include` products, `acceptable` products, rationale.
-- **Evaluation Report**: the result of one evaluation run: per-card check results, per-restaurant comparison with gold labels, aggregate metrics, git commit, model name, run date.
+- **Evaluation Report**: the result of one evaluation run: per-card check results, per-restaurant comparison with gold labels, aggregate metrics, git commit, LLM provider, model name, run date.
 
 ## Success Criteria *(mandatory)*
 
@@ -239,6 +240,7 @@ All criteria are measured by one evaluation run over the 15 labelled restaurants
 - "Recommendation accuracy" means the metrics SC-003 – SC-005.
 - The pain-point category list and mapping table are authored by the project owner before implementation, starting from the signal → product table in discovery doc 01 §5.2 and limited to the products in `data/products/`. Changing the table is a catalog data change and is committed separately from code (constitution, Scope and Data Constraints).
 - Country availability of products is not considered in v1 (constitution Principle II).
+- The language model is run locally or replaced by a test stand-in; no paid API key is required to develop, test or run the agent. The provider and model are chosen by configuration.
 - Rule-based parts (data loading, checks, formatting, metric calculation) are developed test-first; the LLM-generated card content is verified by the evaluation.
 
 ## Out of Scope

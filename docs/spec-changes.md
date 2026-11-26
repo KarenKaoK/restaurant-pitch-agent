@@ -2,6 +2,17 @@
 
 Behaviour changes to a committed spec are logged here, newest first. Each entry names the spec, the baseline commit, what changed and why.
 
+## 2026-11-26 — 001-visit-card-agent: LLM provider as configuration
+
+- **Spec**: `specs/001-visit-card-agent/spec.md`
+- **Baseline**: commit `1b2650d`
+- **Source**: owner decision at the start of `/speckit-plan`, 2026-11-26.
+
+| Area | Before | After | Reason |
+|---|---|---|---|
+| Run metadata (FR-032, Story 3 #5, Evaluation Report entity) | Report records git commit, model name and run date | Also records the LLM provider | The provider is chosen by configuration, so the model name alone does not identify the run |
+| Model access (Assumptions, Clarifications) | Undefined | The provider and model are configuration; v1 runs with a local model or a test stand-in; no paid API key is required to develop, test or run the agent | Development and testing must not depend on a paid cloud API |
+
 ## 2026-11-26 — 001-visit-card-agent: test-case review
 
 - **Spec**: `specs/001-visit-card-agent/spec.md`

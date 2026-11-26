@@ -19,7 +19,7 @@ Case IDs are stable. Each case names the spec requirement it covers. The cases d
 
 | Layer | What | Method | Data |
 |---|---|---|---|
-| L1 Deterministic logic | Loading, validation, confidence, support count, ranking, prerequisites, decision, short cards, quote check, the 17 deterministic checks, plain-text output, gold-label validation, metrics | TDD | Synthetic fixtures (below) |
+| L1 Deterministic logic | Loading, validation, confidence, support count, ranking, prerequisites, decision, short cards, quote check, the 18 deterministic checks, plain-text output, gold-label validation, metrics | TDD | Synthetic fixtures (below) |
 | L2 Pipeline with a stubbed model | The full path from model output to card, with the model replaced by a stub that returns fixed output | TDD | Synthetic fixtures + stub |
 | L3 Real-data regression | Real catalog, mapping, gold labels; rule-only cards (closed, chain) | TDD | Real files in `data/` |
 | L4 Model quality | Classification accuracy, pitch tone, product descriptions | Evaluation (Story 3) and human review (SC-006) | `data/eval/expected.csv` |
@@ -309,7 +309,7 @@ Synthetic results for three restaurants unless stated.
 | TC-V01 | FR-026 | Gold labels + stub | One command produces a report |
 | TC-V02 | FR-029 | 3 labelled restaurants | Agent runs exactly 3 times, once each |
 | TC-V03 | Edge case | A restaurant in the data but not in the gold labels | Not evaluated; listed as unlabelled |
-| TC-V04 | FR-032 | Any run | Report shows git commit, model name, run date |
+| TC-V04 | FR-032 | Any run | Report shows git commit, LLM provider, model name, run date |
 | TC-V05 | FR-030 | Any run | Pass/fail per check per card, with failure reason |
 | TC-V06 | Story 3 #3 | Any run | Per restaurant: expected and actual decision, recommended products, missed must_include, products outside must_include ∪ acceptable |
 | TC-V07 | FR-032 | Any run | Generated cards included or referenced |
