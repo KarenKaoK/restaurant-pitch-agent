@@ -2,6 +2,21 @@
 
 Behaviour changes to a committed spec are logged here, newest first. Each entry names the spec, the baseline commit, what changed and why.
 
+## 2026-11-26 — 001-visit-card-agent: test-case review
+
+- **Spec**: `specs/001-visit-card-agent/spec.md`
+- **Baseline**: commit `a8a6526`
+- **Source**: open questions Q1–Q6 found while writing `specs/001-visit-card-agent/test-cases.md`; decided by the owner on 2026-11-26.
+
+| Area | Before | After | Reason |
+|---|---|---|---|
+| One pain point per category (FR-008, FR-025 #18) | A category could appear in several pain points | A category with mapped products appears at most once per card, evidence merged; only `other_unmapped` may repeat. New deterministic check #18 | Splitting evidence would lower confidence (two `medium` instead of one `high`) and change the ranking |
+| Prerequisite pain points (FR-012) | Prerequisite addressed the same pain points as the requiring product | Also lists its own pain points; confidence stays that of the requiring product | Defined behaviour when a prerequisite is also a candidate |
+| Short-card review count (FR-007) | "Number of reviews analysed" on every card | Short cards show "Reviews not analysed" | Reviews are not analysed for closed or chain restaurants |
+| Prerequisites in metrics (SC-004, SC-005) | Undefined | Primary and prerequisite products both count | Gold labels list prerequisites (e.g. R04) |
+| Rule-breaking model output (Edge cases) | Undefined | Unknown category or non-verbatim quote produces a card that fails the checks; only unparseable output or a failed call is a generation failure | Problems stay visible in the evaluation report |
+| Gold-label validation (FR-028, Story 3 #6) | Three invalid-row types; behaviour after an error undefined | Six invalid-row types; the evaluation lists all invalid rows and stops before running the agent | Metrics are never computed on a partial or contradictory label set |
+
 ## 2026-11-26 — 001-visit-card-agent: clarification session
 
 - **Spec**: `specs/001-visit-card-agent/spec.md`

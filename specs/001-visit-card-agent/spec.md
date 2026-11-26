@@ -22,6 +22,12 @@
 - Q: Should cards for closed or chain restaurants still analyse reviews? → A: No. They are short cards produced by rule without calling the model: restaurant summary (without a review-based description), decision `no_recommendation` and the reason that the restaurant is not in the recommendation target list because it is closed and/or a chain. Pain points, opening pitch and discovery questions each state "Not applicable".
 - Q: How strict is the verbatim-quote check, and how short may a quote be? → A: After trimming leading/trailing whitespace and collapsing runs of whitespace to one space (in both quote and review text), the quote must be an exact substring of the review `text`, case and punctuation included, and must contain at least 3 words.
 - Q: On an `insufficient_evidence` card, what do the opening pitch and discovery questions contain? → A: If the card has pain points (whose categories map to no product), the pitch and questions are written as usual. If it has no pain points at all, the pitch states "Not applicable" and the discovery questions are general operational questions derived from the pain-point category list, each labelled "Not based on reviews".
+- Q: May the same mapped category appear as two pain points on one card? → A: No. A category with mapped products appears at most once per card, with all its evidence merged; only `other_unmapped` may repeat for distinct issues.
+- Q: Which pain points does a prerequisite product list when it also has its own pain point? → A: The pain points of the product that requires it plus its own; its confidence stays that of the requiring product.
+- Q: What does a closed or chain short card show for the number of reviews analysed? → A: "Reviews not analysed".
+- Q: Do prerequisite products count in SC-004 and SC-005? → A: Yes. All recommended products, primary and prerequisite, count.
+- Q: Is an unknown category or a non-verbatim quote from the model a generation failure? → A: No. The card is produced and fails the deterministic checks, so the problem is visible in the evaluation report. Only unparseable output or a failed model call is a generation failure.
+- Q: Which gold-label rows are invalid, and what happens when one is found? → A: Also invalid: a duplicate restaurant row, a product in both `must_include` and `acceptable`, and a non-empty `must_include` when the decision is not `recommend`. If any row is invalid, the evaluation lists every invalid row and stops before running the agent.
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -84,7 +90,7 @@ The project owner runs a single command that generates a visit card for every re
 3. **Given** gold labels, **When** the evaluation runs, **Then** the report shows, per restaurant, the expected decision, the actual decision, the recommended products, which `must_include` products were missed, and which recommended products were outside `must_include` and `acceptable`.
 4. **Given** a completed run, **When** the owner opens the report, **Then** it shows the aggregate metrics SC-001 – SC-005 and whether each target is met.
 5. **Given** a completed run, **When** the owner opens the report, **Then** it shows the git commit and the model name used for the run.
-6. **Given** a gold-label row that references an unknown restaurant ID, an invalid decision value or an unknown product ID, **When** the evaluation runs, **Then** it reports the invalid row clearly instead of silently scoring it.
+6. **Given** a gold-label file with an invalid row (FR-028), **When** the evaluation runs, **Then** it lists every invalid row with its reason and stops before running the agent.
 
 ---
 
@@ -107,6 +113,7 @@ The project owner runs a single command that generates a visit card for every re
 - **Reviews with `text_source` = `translated` or `expanded`**: the quote is still taken from the stored `text`, and the card shows the text source so the rep knows it is not the guest's own wording.
 - **Review dates**: the agent MUST NOT use review dates to say a problem is recent, ongoing or resolved.
 - **Generation failure** (the model returns output that cannot be parsed or a call fails): the agent reports an error for that restaurant instead of producing a partial card; in evaluation, the card counts as failing the format check.
+- **Model output that parses but breaks the rules** (unknown category, non-verbatim quote, review from another restaurant): not a generation failure. The card is produced as returned, without silent correction, and fails the relevant deterministic checks.
 - **Restaurant in the dataset but missing from the gold-label file**: not evaluated; the report lists it as unlabelled.
 
 ## Requirements *(mandatory)*
@@ -124,12 +131,12 @@ The project owner runs a single command that generates a visit card for every re
 **Visit card content**
 
 - **FR-006**: Every card MUST contain these sections: restaurant summary, pain points, recommendation decision, recommended products, opening pitch, discovery questions. A section with no content MUST say so explicitly (e.g. "No products recommended"). On a closed or chain card (FR-020a), the pain points, opening pitch and discovery questions sections MUST state "Not applicable".
-- **FR-007**: The restaurant summary MUST include the restaurant's name, city, status, segment and the number of reviews analysed, plus a short description based only on the restaurant data and its reviews. On a closed or chain card the review-based description is omitted.
-- **FR-008**: Each pain point MUST have a category from the pain-point category list (FR-013a), a short description, a confidence level (`high` or `medium`) and at least one piece of evidence. There is no `low` level in v1.
+- **FR-007**: The restaurant summary MUST include the restaurant's name, city, status, segment and the number of reviews analysed, plus a short description based only on the restaurant data and its reviews. On a closed or chain card the review-based description is omitted and the review count is replaced by "Reviews not analysed".
+- **FR-008**: Each pain point MUST have a category from the pain-point category list (FR-013a), a short description, a confidence level (`high` or `medium`) and at least one piece of evidence. There is no `low` level in v1. A category with mapped products MUST appear at most once per card; all evidence for that category is merged into one pain point. Only `other_unmapped` may appear more than once, for distinct issues.
 - **FR-009**: Each piece of evidence MUST include the review ID, a verbatim excerpt of that review's `text` field, and that review's `text_source`. An excerpt MUST come from a single review, MUST NOT be reworded, and MUST contain at least 3 words (words are separated by whitespace).
 - **FR-010**: A finding that cannot be supported by at least one verbatim review excerpt MUST NOT appear on the card, neither as a pain point nor in the opening pitch.
 - **FR-011**: The confidence level of a pain point MUST follow this rule, counting distinct reviews of the restaurant cited as evidence: more than 1 review → `high`; exactly 1 review → `medium`. A single review is enough to support a recommendation.
-- **FR-012**: Each recommended product MUST be identified by its catalog `product_id`, MUST list the pain point(s) it addresses and the evidence (review IDs) behind them, and MUST carry a confidence level equal to the highest confidence among the pain points it addresses. A required prerequisite product (see FR-015) carries the confidence of the product that requires it.
+- **FR-012**: Each recommended product MUST be identified by its catalog `product_id`, MUST list the pain point(s) it addresses and the evidence (review IDs) behind them, and MUST carry a confidence level equal to the highest confidence among the pain points it addresses. A required prerequisite product (see FR-015) carries the confidence of the product that requires it, and lists the pain points of that product plus any pain points it addresses in its own right.
 - **FR-013**: A product MAY be recommended only if it addresses at least one pain point on the card. Exception: a product added only as a required prerequisite (FR-015) addresses the same pain points as the product that requires it. "Insufficient evidence" means the restaurant is eligible but no pain point on the card belongs to a category that maps to a product.
 - **FR-013a**: The project MUST keep a fixed pain-point category list and a category → product mapping table in `data/products/pain-point-product-mapping.json`. Each category MUST have a unique `category_id`, a `definition` and a `product_ids` list (zero or more catalog `product_id`s); categories with an empty `product_ids` list (e.g. `other_unmapped` for food quality or price) are allowed. Other fields in the file (example signals, exclusions, classification rules) guide classification only and MUST NOT override this spec. The model MUST only assign reviews to categories in this list and extract evidence; it MUST NOT decide which product addresses a pain point. The products that address a pain point are exactly the products mapped to its category. Candidate products, support counts, confidence and the FR-015a ranking MUST be computed by rule from the pain points and the table, not by the model.
 - **FR-014**: The agent MUST recommend only products in the catalog, MUST respect the `requires` prerequisites in the catalog, and MUST keep product descriptions consistent with the catalog's official facts. Project-authored sales notes MUST NOT be presented as official DISH facts.
@@ -180,13 +187,14 @@ The project owner runs a single command that generates a visit card for every re
   14. primary recommendations are listed in FR-015a rank order (confidence, then support count, then `product_id` ascending), and no candidate not selected ranks higher than a selected primary under that full order;
   15. a candidate not selected appears only when 2 primary recommendations are already selected;
   16. every pain point's category exists in the pain-point category list;
-  17. every primary recommendation and every candidate not selected is mapped by the table to the category of at least one pain point it lists, and every product mapped from a pain point category on the card appears as a primary recommendation or a candidate not selected (unless it is only present as a prerequisite).
+  17. every primary recommendation and every candidate not selected is mapped by the table to the category of at least one pain point it lists, and every product mapped from a pain point category on the card appears as a primary recommendation or a candidate not selected (unless it is only present as a prerequisite);
+  18. no category other than `other_unmapped` appears in more than one pain point on the card.
 
 **Evaluation**
 
 - **FR-026**: The evaluation MUST be runnable with a single command.
 - **FR-027**: The evaluation MUST read gold labels from `data/eval/expected.csv` with the columns `restaurant_id`, `decision` (`recommend` / `no_recommendation` / `insufficient_evidence`), `must_include` (zero or more product IDs), `acceptable` (zero or more product IDs) and `rationale`. Multiple product IDs in one field are separated by `;`.
-- **FR-028**: The evaluation MUST validate the gold-label file before running and report invalid rows (unknown restaurant, invalid decision, unknown product ID).
+- **FR-028**: The evaluation MUST validate the gold-label file before running the agent. A row is invalid if it has an unknown restaurant ID, an invalid decision value, an unknown product ID, a restaurant ID that already appears in another row, a product ID listed in both `must_include` and `acceptable`, or a non-empty `must_include` while the decision is not `recommend`. A file with missing columns is invalid as a whole. If anything is invalid, the evaluation MUST list every invalid row with its reason and stop without running the agent or computing metrics.
 - **FR-029**: The evaluation MUST run the agent exactly once per labelled restaurant.
 - **FR-030**: The evaluation MUST run all FR-025 checks on every card and report pass/fail per check per card.
 - **FR-031**: The evaluation MUST compute and report the metrics in SC-001 – SC-005 and whether each target is met.
@@ -217,8 +225,8 @@ All criteria are measured by one evaluation run over the 15 labelled restaurants
 - **SC-001**: 100% of generated visit cards pass all deterministic checks (FR-025).
 - **SC-002**: 100% of cards for closed or chain restaurants contain no recommended products.
 - **SC-003**: The card's decision matches the gold-label decision for at least 13 of 15 restaurants.
-- **SC-004**: At least 80% of all `must_include` products (summed over all labelled restaurants) appear in the corresponding card's recommendations.
-- **SC-005**: At most 1 restaurant has a card that recommends a product outside its `must_include` and `acceptable` lists.
+- **SC-004**: At least 80% of all `must_include` products (summed over all labelled restaurants) appear in the corresponding card's recommendations (primary or prerequisite).
+- **SC-005**: At most 1 restaurant has a card that recommends a product (primary or prerequisite) outside its `must_include` and `acceptable` lists.
 - **SC-006**: In the human review at each checkpoint, every opening pitch reviewed is worded from the guests' perspective and does not blame the owner, and no recommendation violates a product limit written in the catalog.
 
 ## Assumptions
