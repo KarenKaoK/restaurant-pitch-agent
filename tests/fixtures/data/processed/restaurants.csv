@@ -1,0 +1,7 @@
+restaurant_id,name,city,address,status,segment
+F01,Fixture Bistro,Testcity,Teststrasse 1,unknown,independent
+F02,Fixture Closed,Testcity,,closed,independent
+F03,Fixture Chain,Testcity,,unknown,chain
+F04,Fixture Closed Chain,Testcity,,closed,chain
+F05,Fixture No Reviews,Testcity,,unknown,independent
+F06,Fixture Twin,Testcity,,unknown,independent

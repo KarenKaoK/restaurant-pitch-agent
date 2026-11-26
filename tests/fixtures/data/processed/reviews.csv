@@ -1,0 +1,11 @@
+review_id,restaurant_id,text,text_source,review_date,date_imputed,rating,rating_imputed,platform,source_url
+F01-001,F01,They only accept cash payments here.,original,2026-01-10,false,2,false,Google,https://example.com/fixture/F01
+F01-002,F01,"Cash only, so we had to find an ATM.",translated,2026-02-11,false,3,false,Google,https://example.com/fixture/F01
+F01-003,F01,We waited two hours for our food.,original,2026-03-12,false,1,false,Tripadvisor,https://example.com/fixture/F01
+F01-004,F01,The soup was cold and bland.,expanded,2026-04-13,true,2,true,Tripadvisor,https://example.com/fixture/F01
+F01-005,F01,Lovely staff and great coffee.,original,2026-05-14,false,5,false,Google,https://example.com/fixture/F01
+F01-006,F01,"The bill was wrong and
+they forgot our drinks.",original,2026-06-15,false,2,false,Google,https://example.com/fixture/F01
+F02-001,F02,We waited two hours for our food.,original,2026-01-20,false,1,false,Google,https://example.com/fixture/F02
+F03-001,F03,They only accept cash payments here.,original,2026-01-21,false,2,false,Google,https://example.com/fixture/F03
+F06-001,F06,They only accept cash payments here.,original,2026-01-22,false,2,false,Google,https://example.com/fixture/F06

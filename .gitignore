@@ -9,3 +9,11 @@
 
 # Data preparation by-product (not used by the agent or evaluation)
 data/eval/labels.csv
+
+# Evaluation output (research R12)
+runs/
+
+# Python
+__pycache__/
+*.pyc
+.pytest_cache/
