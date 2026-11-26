@@ -149,16 +149,16 @@ The provider code is isolated in `llm/`, and evaluation in `evaluation/`. `scrip
 
 | Section | Cases | Module(s) | Layer |
 |---|---|---|---|
-| A Data loading | TC-D01–D14 | `loaders.py`, `agent.py` (D13, D14) | L1 |
+| A Data loading | TC-D01–D19 | `loaders.py`, `agent.py` (D13, D14) | L1 |
 | B Eligibility / short cards | TC-E01–E08 | `agent.py` | L1 (mock asserting no call) |
-| C Confidence | TC-C01–C09 | `rules.py` (C08, C09 via `agent.py` + mock) | L1 |
-| D Candidates / support | TC-S01–S06 | `rules.py`, `analysis.py` (S06) | L1 |
+| C Confidence | TC-C01–C10 | `rules.py` (C08, C09 via `agent.py` + mock) | L1 |
+| D Candidates / support | TC-S01–S07 | `rules.py`, `analysis.py` (S06) | L1 |
 | E Ranking | TC-R01–R08 | `rules.py` | L1 |
 | F Prerequisites | TC-P01–P07 | `rules.py` | L1 |
 | G Decision | TC-DEC01–05 | `rules.py`, `agent.py` | L1 |
 | H Quote check | TC-Q01–Q13 | `checks.py` | L1 |
 | I Checks 1–18 | TC-K00–K19 | `checks.py` | L1 |
-| J Plain text | TC-T01–T08 | `render.py` | L1 |
+| J Plain text | TC-T01–T09 | `render.py` | L1 |
 | K Pipeline | TC-I01–I09 | `agent.py`, `analysis.py`, `llm/mock.py` | L2 |
 | L Gold labels | TC-G01–G12 | `evaluation/labels.py` | L1 |
 | M Metrics | TC-M01–M10 | `evaluation/metrics.py` | L1 |

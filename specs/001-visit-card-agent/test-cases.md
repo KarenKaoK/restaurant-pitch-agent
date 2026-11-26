@@ -104,6 +104,11 @@ Notation used below: `PP(category, [review IDs])` is a pain point; `cand(product
 | TC-D12 | FR-013a | Mapping with extra fields (`example_signals`, `exclusions`, `rules`) | Loads; extra fields do not change candidate products |
 | TC-D13 | FR-002 | Agent run for F01 with `data/raw/` and `data/eval/` absent | Card produced normally (agent does not depend on them) |
 | TC-D14 | FR-005 | Any card (structured and plain text) | Contains no reviewer name, profile URL, reviewer ID, photo or reviewer statistics fields |
+| TC-D15 | FR-002a | Restaurants file with two rows for F01 | Load error naming `restaurants.csv`, the row and "duplicate restaurant_id" |
+| TC-D16 | FR-002a | Reviews file with two rows for F01-001 | Load error naming `reviews.csv`, the row and "duplicate review_id" |
+| TC-D17 | FR-002a | Review `F99-001` with `restaurant_id` = `F99` (not in restaurants) | Load error naming `reviews.csv`, the row and "unknown restaurant_id" |
+| TC-D18 | FR-002a | (a) Review with `text_source` = `machine`; (b) restaurant with `segment` = `franchise` | Each: load error naming the file, the row and the invalid value |
+| TC-D19 | FR-002a | (a) Reviews file without the `text_source` column; (b) restaurant with an empty `name`; (c) review with an empty `source_url`; (d) review with an empty `review_date` and `rating` | (a)–(c): load error naming the file, the row (if any) and the missing column or value; (d): loads (dates and ratings not validated) |
 
 ## B. Eligibility and short cards (L1)
 
@@ -126,11 +131,12 @@ Notation used below: `PP(category, [review IDs])` is a pain point; `cand(product
 | TC-C02 | FR-011 | PP(c_cash, [F01-001, F01-002]) | `high` |
 | TC-C03 | FR-011 | PP(c_cash) with two evidence items both citing F01-001 | `medium` (distinct reviews counted) |
 | TC-C04 | FR-011 | PP(c_kitchen, [F01-003, F01-004, F01-005]) | `high` |
-| TC-C05 | FR-008 | Pain point with no evidence | Rejected (not allowed on a card) |
+| TC-C05 | FR-008 | Pain point with no evidence | Confidence is null; the pain point stays on the card and fails check 1; it does not count toward any product (FR-012) |
 | TC-C06 | FR-012 | dish-pos addresses PP(c_kitchen, [F01-003, F01-004]) `high` and PP(c_order, [F01-006]) `medium` | Product confidence `high` |
 | TC-C07 | FR-012 | dish-pos addresses only `medium` pain points | Product confidence `medium` |
 | TC-C08 | FR-008 | Model stub returns c_cash twice: [F01-001] and [F01-002] | Card has one PP(c_cash, [F01-001, F01-002]) with confidence `high` |
 | TC-C09 | FR-008 | Model stub returns c_none twice for two distinct issues: [F01-004] and [F01-005] | Two separate `c_none` pain points are allowed |
+| TC-C10 | FR-012 | dish-pos addresses PP(c_kitchen, [F01-003]) `medium` and PP(c_order) with no evidence | Product confidence `medium`; support = 1; `pain_point_ids` lists only the c_kitchen pain point |
 
 ## D. Candidates and support count (L1)
 
@@ -142,6 +148,7 @@ Notation used below: `PP(category, [review IDs])` is a pain point; `cand(product
 | TC-S04 | FR-015a | PP(c_kitchen, [F01-003]) and PP(c_order, [F01-006]) | dish-pos support = 2 |
 | TC-S05 | FR-015a | PP(c_kitchen, [F01-003, F01-006]) and PP(c_order, [F01-006]) | dish-pos support = 2 (F01-006 counted once) |
 | TC-S06 | FR-013a | Model stub also returns its own product suggestions | Suggestions ignored; candidates come only from the table |
+| TC-S07 | FR-012 | PP(c_cash) with no evidence only | No candidates (dish-pay is not a candidate) |
 
 ## E. Ranking and selection (L1)
 
@@ -236,6 +243,7 @@ Each check gets one passing card and at least one failing card. "Valid card" mea
 | TC-K17a | 17 | Primary dish-starter addressing only PP(c_cash) | Check 17 fails (not mapped) |
 | TC-K17b | 17 | PP(c_kitchen) on the card but dish-pos neither primary nor not selected | Check 17 fails (missing candidate) |
 | TC-K17c | 17 | dish-professional-reservation present only as prerequisite while PP(c_booking) is on the card (TC-P03) | Check 17 passes |
+| TC-K17d | 17 | PP(c_cash) with no evidence on the card; dish-pay neither primary nor not selected | Check 17 passes (check 1 fails) |
 | TC-K18a | 18 | Two pain points with category c_cash | Check 18 fails |
 | TC-K18b | 18 | Two pain points with category `other_unmapped` (c_none in fixtures) | Check 18 passes |
 | TC-K19 | All | Run all checks on a card failing checks 2 and 7 | Both failures reported, each with a reason; other checks still run |
@@ -252,6 +260,7 @@ Each check gets one passing card and at least one failing card. "Valid card" mea
 | TC-T06 | FR-017a | Card with general questions | Each shows the label "Not based on reviews" |
 | TC-T07 | FR-012 | Card with a prerequisite | Prerequisite is marked as prerequisite and names the product that requires it |
 | TC-T08 | FR-022 | Same structured card rendered twice | Identical text |
+| TC-T09 | FR-024 | Any card (`recommend`, `insufficient_evidence` and short card) | Text contains the fixed line "Prepared for the sales rep. Hypotheses from public reviews; not a final decision." |
 
 ## K. Pipeline with a stubbed model (L2)
 
@@ -336,7 +345,7 @@ Synthetic results for three restaurants unless stated.
 | Product limits written as text in the catalog | Human review (constitution Principle II) |
 | FR-018 no quotes, offers or discounts | Human review |
 | FR-019 no claims about recency from review dates | Human review |
-| FR-024 no outward-facing action | Design review in the plan (the agent has no capability to send anything) |
+| FR-024 no outward-facing action | Design review in the plan (the agent has no capability to send anything); the "not a final decision" line is tested by TC-T09 |
 
 ---
 

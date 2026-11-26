@@ -14,8 +14,8 @@ In-memory types are Python dataclasses (frozen where practical). The card's JSON
 | `name` | str | Required |
 | `city` | str | Required |
 | `address` | str | May be empty; not shown on the card |
-| `status` | str | `closed` makes the restaurant ineligible; any other value (`unknown`, …) is treated as open |
-| `segment` | str | `chain` makes the restaurant ineligible; `independent` otherwise |
+| `status` | str | Required; `closed` makes the restaurant ineligible; any other value (`unknown`, …) is treated as open |
+| `segment` | str | Required; `independent` or `chain` (load error otherwise, FR-002a); `chain` makes the restaurant ineligible |
 
 Derived: `is_closed = status == "closed"`, `is_chain = segment == "chain"`, `eligible = not (is_closed or is_chain)`.
 
@@ -24,13 +24,15 @@ Derived: `is_closed = status == "closed"`, `is_chain = segment == "chain"`, `eli
 | Field | Type | Rule |
 |---|---|---|
 | `review_id` | str | Unique; required |
-| `restaurant_id` | str | Must exist in restaurants |
-| `text` | str | Source for verbatim quotes |
-| `text_source` | str | `original` / `translated` / `expanded` |
-| `review_date`, `date_imputed`, `rating`, `rating_imputed` | — | Loaded but never sent to the model nor shown on the card (FR-019) |
-| `platform`, `source_url` | str | Kept (constitution V); not shown on the card in v1 |
+| `restaurant_id` | str | Required; must exist in restaurants (load error otherwise, FR-002a) |
+| `text` | str | Required; source for verbatim quotes |
+| `text_source` | str | Required; `original` / `translated` / `expanded` (load error otherwise, FR-002a) |
+| `review_date`, `date_imputed`, `rating`, `rating_imputed` | — | Loaded but never sent to the model nor shown on the card (FR-019); not validated in v1 |
+| `platform`, `source_url` | str | Required; kept (constitution V); not shown on the card in v1 |
 
 No reviewer identity fields exist; the loader does not accept or expose any (FR-005).
+
+Restaurant and review validation (FR-002a): a missing column, an empty required value, a duplicate ID, a value outside the allowed set or a review of an unknown restaurant raises `LoadError` naming the file, row and reason (TC-D15–TC-D19).
 
 ### Product — `data/products/*.md` frontmatter
 
@@ -133,10 +135,10 @@ Parsing raises `GenerationError` only for invalid JSON or wrong shape (research 
 | `name` | str | Catalog `name` |
 | `role` | `primary` \| `prerequisite` | FR-015 |
 | `required_by` | list[str] | Primaries that require this product; `[]` for primaries |
-| `pain_point_ids` | list[str] | Primary: pain points whose category maps to the product. Prerequisite: union of the requiring products' pain points and its own (FR-012) |
+| `pain_point_ids` | list[str] | Primary: pain points whose category maps to the product (pain points with ≥ 1 evidence item only). Prerequisite: union of the requiring products' pain points and its own (FR-012) |
 | `supporting_review_ids` | list[str] | Distinct review IDs cited by those pain points, sorted |
 | `support_count` | int | `len(supporting_review_ids)` (check 13) |
-| `confidence` | `high` \| `medium` | Primary: highest among its pain points. Prerequisite: that of the requiring product (highest if several) |
+| `confidence` | `high` \| `medium` | Primary: highest among its pain points (pain points with ≥ 1 evidence item only; `null` is ignored). Prerequisite: that of the requiring product (highest if several) |
 
 ### Candidate (not selected)
 
@@ -188,7 +190,8 @@ restaurant_id
        5. attach text_source to each evidence item from the restaurant's reviews
        6. confidence per pain point (distinct review IDs)                              FR-011
        7. candidates: for each product mapped from a pain point category on the card:  FR-013a
-          pain_point_ids, distinct supporting reviews, support_count, confidence = max
+          pain_point_ids, distinct supporting reviews, support_count, confidence = max;
+          pain points without evidence are skipped (a product with none left is no candidate)  FR-012
        8. rank by (confidence desc, support_count desc, product_id asc);               FR-015a
           top 2 → primary; rest → candidates_not_selected
        9. prerequisites: for each primary with `requires` R not already primary,       FR-015, FR-012
@@ -220,7 +223,7 @@ All 18 checks always run; a failure in one does not stop the others (TC-K19). If
 | `restaurant_id` | str |
 | `card` | VisitCard dict \| null (null on generation failure) |
 | `error` | str \| null |
-| `checks` | list[CheckResult] (on generation failure: check 1 failed with the error, others "not evaluated") |
+| `checks` | list[CheckResult] (on generation failure: check 1 fails with the error; checks 2–18 fail with the reason "not evaluated: generation failed") |
 | `expected_decision`, `actual_decision` | str (actual is `error` on generation failure) |
 | `recommended_products` | list[str] (primary + prerequisite) |
 | `missed_must_include` | list[str] |

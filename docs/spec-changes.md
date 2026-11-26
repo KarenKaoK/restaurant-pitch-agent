@@ -2,6 +2,18 @@
 
 Behaviour changes to a committed spec are logged here, newest first. Each entry names the spec, the baseline commit, what changed and why.
 
+## 2026-11-26 — 001-visit-card-agent: analyze findings
+
+- **Spec**: `specs/001-visit-card-agent/spec.md`
+- **Baseline**: commit `90580c6`
+- **Source**: `/speckit-analyze` findings U1, U2 and I2; decided by the owner on 2026-11-26. Each decision is also recorded under "Clarifications" in the spec.
+
+| Area | Before | After | Reason |
+|---|---|---|---|
+| Pain points without evidence (FR-012, FR-025 #17) | Undefined how a pain point with `null` confidence affects products | Kept on the card and fails check 1, but ignored for candidate products, product confidence, support counts and ranking; a product whose mapped pain points all lack evidence is not a candidate; check 17 considers only pain points with evidence | Unsupported findings must not drive a recommendation, while staying visible for debugging in the evaluation |
+| Dataset validation (new FR-002a) | Only the catalog and mapping table were validated | The restaurant and review datasets are validated for required columns and values, unique IDs, allowed `segment` / `text_source` values and reviews of known restaurants; dates and ratings are not validated | Broken input data fails loudly instead of producing wrong cards |
+| Gold-label file (Assumptions) | `data/eval/expected.csv` "does not exist yet" | The file is created and maintained by the owner | The file now exists; the assumption was outdated |
+
 ## 2026-11-26 — 001-visit-card-agent: LLM provider as configuration
 
 - **Spec**: `specs/001-visit-card-agent/spec.md`
