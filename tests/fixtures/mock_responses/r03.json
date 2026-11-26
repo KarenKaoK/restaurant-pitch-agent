@@ -1,0 +1,25 @@
+{
+  "R03": {
+    "restaurant_description": "Japanese restaurant in Düsseldorf; guests praise fresh sushi and sashimi, mention a busy, noisy room and recommend booking ahead.",
+    "pain_points": [
+      {
+        "ref": "p1",
+        "category_id": "reservation_management_failure",
+        "description": "A guest who reserved online found no table on arrival.",
+        "evidence": [{"review_id": "R03-001", "quote": "Reserved online. No table."}]
+      },
+      {
+        "ref": "p2",
+        "category_id": "other_unmapped",
+        "description": "A guest mentions a half-hour wait; it is unclear whether for a table or for the food.",
+        "evidence": [{"review_id": "R03-011", "quote": "there was a half-hour wait"}]
+      }
+    ],
+    "opening_pitch": "Your guests clearly love the fresh sushi, and many recommend booking ahead. One guest who had reserved online still found no table, so I'd like to hear how reservations reach your team today.",
+    "discovery_questions": [
+      {"pain_point_ref": "p1", "question": "How do online reservations reach the floor team, and how do you see them on a busy evening?"},
+      {"pain_point_ref": "p2", "question": "When guests wait at peak times, is it usually for a table or for the food?"}
+    ],
+    "general_questions": []
+  }
+}

@@ -86,3 +86,24 @@ def fixture_mapping(fixture_catalog):
     from pitch_agent.loaders import load_mapping
 
     return load_mapping(FIXTURE_DATA_DIR / "products" / "pain-point-product-mapping.json", fixture_catalog)
+
+
+@pytest.fixture
+def mock_llm():
+    """Factory: ``mock_llm({restaurant_id: response})`` returns a recording MockLLM."""
+    from pitch_agent.llm.mock import MockLLM
+
+    return lambda responses=None: MockLLM(responses or {})
+
+
+class _FailingLLM:
+    provider = model = "fail-if-called"
+
+    def generate(self, request):
+        pytest.fail(f"the model must not be called (request {request.request_id})")
+
+
+@pytest.fixture
+def failing_llm():
+    """Stub LLM that fails the test if it is called."""
+    return _FailingLLM()
