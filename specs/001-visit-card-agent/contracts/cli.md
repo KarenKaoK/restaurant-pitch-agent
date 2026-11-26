@@ -8,7 +8,7 @@ Entry point: `pitch-agent` (console script from `pyproject.toml`; run as `uv run
 |---|---|---|
 | `--data-dir PATH` | `data` | Root of the data folder. The agent reads only `processed/` and `products/` below it. |
 | `--provider NAME` | env `PITCH_AGENT_LLM_PROVIDER`, else `ollama` | LLM provider: `mock` or `ollama` in v1 |
-| `--model NAME` | env `PITCH_AGENT_LLM_MODEL`, else provider default (`qwen3:8b` / `mock`) | Model name passed to the provider |
+| `--model NAME` | env `PITCH_AGENT_LLM_MODEL`, else provider default (`granite4.2:8b` / `mock`) | Model name passed to the provider |
 | `--mock-responses PATH` | none | Only with `--provider mock`: JSON file `{restaurant_id: response}` (see [llm-interface.md](llm-interface.md)) |
 
 An unknown provider name is a usage error that lists the available providers. No option or setting is an API key.

@@ -126,7 +126,7 @@ At each **Checkpoint**: run `uv run pytest` (all tests must pass), stop, wait fo
 
 ### LLM interface and configuration
 
-- [X] T037 [P] [US1] Write configuration tests in `tests/unit/test_config.py` (plan.md design tests, no case ID): CLI flag > environment variable > default for provider and model (research R6), default model per provider (`qwen3:8b` / `mock`), `create_llm` with an unknown provider raises `ConfigError` listing the available providers. Confirm they fail
+- [X] T037 [P] [US1] Write configuration tests in `tests/unit/test_config.py` (plan.md design tests, no case ID): CLI flag > environment variable > default for provider and model (research R6), default model per provider (`granite4.2:8b` / `mock`), `create_llm` with an unknown provider raises `ConfigError` listing the available providers. Confirm they fail
 - [X] T038 [US1] Implement `LLMRequest`, `LLMClient` (protocol), `LLMError`, `LLMConfig` and `ConfigError` in `src/pitch_agent/llm/__init__.py` per [contracts/llm-interface.md](contracts/llm-interface.md)
 - [X] T039 [US1] Implement `MockLLM` in `src/pitch_agent/llm/mock.py` per contracts/llm-interface.md "mock": mapping, callable or JSON file input; `{"raw": …}` and `{"error": …}` responses; empty-analysis default; `calls` list; `provider = model = "mock"`
 - [X] T040 [US1] Implement `resolve_llm_config(...)` in `src/pitch_agent/config.py` and the registry plus `create_llm` in `src/pitch_agent/llm/factory.py` (registry `{"mock": MockLLM}`; `ollama` is added in T052) until T037 passes
@@ -159,10 +159,10 @@ At each **Checkpoint**: run `uv run pytest` (all tests must pass), stop, wait fo
 
 **Independent Test**: Tests against a local stub HTTP server pass; no real model is needed for automated tests.
 
-- [ ] T050 [P] [US1] Write tests in `tests/unit/test_ollama.py` (plan.md design test, no case ID) using a stub HTTP server from `http.server` on a free local port: request body (`model`, system + user `messages`, `format` = `json_schema`, `stream: false`, `options` `{temperature: 0, seed: 42, num_ctx: 8192}`); returns `message.content`; connection refused, HTTP ≥ 400, timeout and missing `message.content` raise `LLMError` whose message names the host and model and suggests `ollama serve` / `ollama pull <model>`. Confirm they fail
-- [ ] T051 [US1] Implement `OllamaLLM` in `src/pitch_agent/llm/ollama.py` with `urllib.request` per contracts/llm-interface.md "ollama"; host from `OLLAMA_HOST` (default `http://localhost:11434`), timeout from `PITCH_AGENT_LLM_TIMEOUT` (default 900 s), research R4, R6; until T050 passes
-- [ ] T052 [US1] Register `ollama` in `src/pitch_agent/llm/factory.py` and extend `tests/unit/test_config.py` so the default provider resolves to `ollama` with model `qwen3:8b`
-- [ ] T053 [US1] Manual smoke run (owner, not automated), following `specs/001-visit-card-agent/quickstart.md`: install Ollama and pull `qwen3:8b` (quickstart step 4), then run `uv run pitch-agent card R03` and check that a card is printed; with Ollama stopped, check the error message of quickstart "Troubleshooting"
+- [X] T050 [P] [US1] Write tests in `tests/unit/test_ollama.py` (plan.md design test, no case ID) using a stub HTTP server from `http.server` on a free local port: request body (`model`, system + user `messages`, `format` = `json_schema`, `stream: false`, `think: false`, `options` `{temperature: 0, seed: 42, num_ctx: 8192}`); returns `message.content`; connection refused, HTTP ≥ 400, timeout and missing `message.content` raise `LLMError` whose message names the host and model and gives the hint for that error (contracts/llm-interface.md). Confirm they fail
+- [X] T051 [US1] Implement `OllamaLLM` in `src/pitch_agent/llm/ollama.py` with `urllib.request` per contracts/llm-interface.md "ollama"; host from `OLLAMA_HOST` (default `http://localhost:11434`), timeout from `PITCH_AGENT_LLM_TIMEOUT` (default 900 s), research R4, R6; until T050 passes
+- [X] T052 [US1] Register `ollama` in `src/pitch_agent/llm/factory.py` and extend `tests/unit/test_config.py` so the default provider resolves to `ollama` with model `granite4.2:8b`
+- [X] T053 [US1] Manual smoke run (owner, not automated), following `specs/001-visit-card-agent/quickstart.md`: install Ollama and pull `granite4.2:8b` (quickstart step 4), then run `uv run pitch-agent card R03` and check that a card is printed; with Ollama stopped, check the error message of quickstart "Troubleshooting"
 
 **Checkpoint**: Ollama provider ready — run all tests, stop for owner review (including the T053 smoke result), propose a commit message (T050–T053).
 

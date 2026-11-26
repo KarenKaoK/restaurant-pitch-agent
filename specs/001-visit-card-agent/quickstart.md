@@ -49,7 +49,7 @@ Expected:
 ```bash
 brew install ollama          # or the installer from ollama.com
 ollama serve                 # keep running in a separate terminal
-ollama pull qwen3:8b         # default model (research R5); several GB download
+ollama pull granite4.2:8b    # default model (research R5); several GB download
 ```
 
 Optional: choose another model once per shell.

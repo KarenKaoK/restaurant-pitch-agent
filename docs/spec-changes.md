@@ -2,6 +2,18 @@
 
 Behaviour changes to a committed spec are logged here, newest first. Each entry names the spec, the baseline commit, what changed and why.
 
+## 2026-11-26 — 001-visit-card-agent: first local-model run (T053)
+
+- **Spec**: `specs/001-visit-card-agent/spec.md`
+- **Baseline**: commit `2c8a83b`
+- **Source**: the first real card with `granite4.2:8b` (R03) wrote the opening pitch in a guest's own voice ("We reserved online but no table was available…") and asked the discovery questions to guests ("How long did you wait…?"); decided by the owner on 2026-11-26. Also recorded under "Clarifications" in the spec.
+
+| Area | Before | After | Reason |
+|---|---|---|---|
+| Opening pitch voice (FR-016) | "Worded from the guests' perspective"; speaker undefined | Spoken by the rep to the owner or manager, reporting in the third person what guests say; never in a guest's own voice | The phrase was read as "write as a guest"; Story 1 #4 already gives the intended example "several guests mention…" |
+
+Not a spec change, done in the same step: the model prompt now states that discovery questions are asked to the owner or manager (already required by FR-017), and that pain-point refs are `p1`, `p2`, … and unique (the first run failed with a duplicate ref because the model used category IDs as refs).
+
 ## 2026-11-26 — 001-visit-card-agent: Phase 2 review
 
 - **Spec**: `specs/001-visit-card-agent/spec.md`

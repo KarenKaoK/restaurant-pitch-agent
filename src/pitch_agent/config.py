@@ -8,7 +8,7 @@ from collections.abc import Mapping
 from pitch_agent.llm import LLMConfig
 
 DEFAULT_PROVIDER = "ollama"
-DEFAULT_MODELS = {"ollama": "qwen3:8b", "mock": "mock"}
+DEFAULT_MODELS = {"ollama": "granite4.2:8b", "mock": "mock"}
 PROVIDER_ENV = "PITCH_AGENT_LLM_PROVIDER"
 MODEL_ENV = "PITCH_AGENT_LLM_MODEL"
 

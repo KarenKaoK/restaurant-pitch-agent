@@ -32,7 +32,7 @@ The model sits behind a small provider-independent interface. v1 ships a **mock*
 
 **Project Type**: CLI application (single project, `src/` layout)
 
-**LLM access**: provider and model are configuration (`--provider/--model`, env `PITCH_AGENT_LLM_PROVIDER/PITCH_AGENT_LLM_MODEL`). v1 providers: `mock` and `ollama` (default model `qwen3:8b`). The interface allows OpenAI, Anthropic or Gemini to be added later without touching business logic — research R3–R6, [contracts/llm-interface.md](contracts/llm-interface.md)
+**LLM access**: provider and model are configuration (`--provider/--model`, env `PITCH_AGENT_LLM_PROVIDER/PITCH_AGENT_LLM_MODEL`). v1 providers: `mock` and `ollama` (default model `granite4.2:8b`). The interface allows OpenAI, Anthropic or Gemini to be added later without touching business logic — research R3–R6, [contracts/llm-interface.md](contracts/llm-interface.md)
 
 **Performance Goals**: none beyond usability:
 - rule-only cards and all tests run in seconds;
@@ -185,7 +185,7 @@ Each phase ends with a checkpoint: all tests pass, then stop for owner review an
 ## Owner decisions on open items (2026-11-26)
 
 1. **Run output location**: approved — `runs/<timestamp>/`, git-ignored; a run is committed only on purpose (research R12).
-2. **Default local model**: approved — start with `qwen3:8b` on Ollama (research R5). Ollama is not installed on the development machine yet (quickstart step 4). If local runs turn out too slow, the owner will consider adding a cloud API provider; that would be a later spec change, and the LLM interface already allows it without business-logic changes.
+2. **Default local model**: approved — start with `qwen3:8b` on Ollama (research R5). **Changed 2026-11-26**: the default is `granite4.2:8b`; `qwen3:8b` and a 4B model are compared in the first evaluation runs before the final default is confirmed. Ollama is not installed on the development machine yet (quickstart step 4). If local runs turn out too slow, the owner will consider adding a cloud API provider; that would be a later spec change, and the LLM interface already allows it without business-logic changes.
 3. **Local model quality risk**: accepted — an 8B model on CPU may miss SC-003 – SC-005 or reword quotes (check 3); the evaluation will show this.
 4. **Interpretations**: approved —
    - categories with no mapped products may repeat (research R11);

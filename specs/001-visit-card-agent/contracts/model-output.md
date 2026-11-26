@@ -10,7 +10,7 @@ The single model call made for an eligible restaurant (research R7). The same co
   - `reviews`: list of `{review_id, text}` — only the requested restaurant's reviews (FR-003); no dates, ratings, platform, URL or reviewer data.
   - `categories`: list of `{category_id, definition, example_signals, exclusions}` — no `product_ids`, no `catalog_reference`.
   - `rules`: the `rules` object of the mapping file.
-- **JSON schema** (`LLMRequest.json_schema`): the output shape below, with `category_id` limited to the category IDs and `review_id` limited to this restaurant's review IDs via `enum`. The schema guides constrained decoding only; the parser does not enforce the enums (research R7, R8).
+- **JSON schema** (`LLMRequest.json_schema`): the output shape below, with `category_id` limited to the category IDs and `review_id` limited to this restaurant's review IDs via `enum`, and `ref` limited to the pattern `^p[0-9]+$`. The schema guides constrained decoding only; the parser does not enforce the enums (research R7, R8).
 
 ## Output (returned by the model)
 
@@ -19,7 +19,7 @@ The single model call made for an eligible restaurant (research R7). The same co
   "restaurant_description": "string",
   "pain_points": [
     {
-      "ref": "string, unique within this answer, e.g. p1",
+      "ref": "p1, p2, … — unique within this answer",
       "category_id": "string",
       "description": "string",
       "evidence": [{"review_id": "string", "quote": "string"}]
@@ -34,7 +34,9 @@ The single model call made for an eligible restaurant (research R7). The same co
 - All five top-level keys are required; lists may be empty.
 - Instructions to the model:
   - `quote` must be copied exactly from the cited review's text, at least 3 words long;
-  - the pitch is worded from the guests' perspective and refers only to listed pain points;
+  - `ref` is `p1`, `p2`, … in order and never repeats (the JSON schema restricts it to the pattern `^p[0-9]+$`; uniqueness is checked by the parser);
+  - the pitch is spoken by the rep to the owner or manager, reports in the third person what guests say ("several guests mention…"), is never written in a guest's own voice, does not blame the owner and refers only to listed pain points (FR-016);
+  - discovery questions are open questions the rep asks the owner or manager, not guests (FR-017);
   - at least one question is given per pain point;
   - `general_questions` is filled only when `pain_points` is empty.
 
