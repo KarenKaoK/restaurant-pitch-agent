@@ -1,0 +1,16 @@
+restaurant_id,name,city,address,status,segment
+R01,Takumi,Düsseldorf,,unknown,independent
+R02,Naniwa Noodles & Soups,Düsseldorf,,unknown,independent
+R03,Yabase,Düsseldorf,,unknown,independent
+R04,Kushi-Tei of Tokyo,Düsseldorf,,unknown,independent
+R05,Bibimcup,Düsseldorf,,unknown,independent
+R06,Sila Thai,Düsseldorf,,unknown,independent
+R07,Phox,Düsseldorf,,unknown,independent
+R08,Restaurant Da Bruno,Düsseldorf,,unknown,independent
+R09,Brauerei Schumacher,Düsseldorf,,unknown,independent
+R10,BLOCK HOUSE Düsseldorf am Hauptbahnhof,Düsseldorf,,unknown,chain
+R11,Dr. Kosch,Düsseldorf,Roßstraße 39,closed,independent
+R12,Curry – Medienhafen,Düsseldorf,Hammer Straße 2,unknown,independent
+R13,Curry – Pempelfort,Düsseldorf,Moltkestraße 115,unknown,independent
+R15,Kasematten,Düsseldorf,Rheinuferpromenade (venue group),unknown,independent
+R16,Bistro Zicke,Düsseldorf,Bäckerstraße 5A,unknown,independent
