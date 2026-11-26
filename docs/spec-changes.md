@@ -2,6 +2,17 @@
 
 Behaviour changes to a committed spec are logged here, newest first. Each entry names the spec, the baseline commit, what changed and why.
 
+## 2026-11-26 — 001-visit-card-agent: Phase 2 review
+
+- **Spec**: `specs/001-visit-card-agent/spec.md`
+- **Baseline**: commit `195bb08`
+- **Source**: gaps found while implementing Phase 2 (T022, merge rule) and reviewing it for strict TDD; decided by the owner on 2026-11-26. Each decision is also recorded under "Clarifications" in the spec.
+
+| Area | Before | After | Reason |
+|---|---|---|---|
+| Unknown category in the merge rule (FR-008, data-model step 4, research R11) | Undefined whether pain points with the same category that is not in the list are merged | Not merged; each stays as returned by the model and fails check 16 (and check 18 when repeated). New test case TC-C11 | The card shows the model output without silent correction |
+| Duplicate pain-point `ref` in model output (Edge cases, contracts/model-output.md parsing rules) | Undefined; the contract only says `ref` is unique | Generation failure (`GenerationError`, wrong shape) | Questions cannot be linked to a pain point unambiguously |
+
 ## 2026-11-26 — 001-visit-card-agent: analyze findings
 
 - **Spec**: `specs/001-visit-card-agent/spec.md`

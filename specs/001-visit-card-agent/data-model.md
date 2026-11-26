@@ -55,7 +55,7 @@ Only `.md` files are products; other files in the folder are ignored (TC-D06).
 | `example_signals`, `exclusions` | list[str] | Optional; sent to the model as classification guidance only |
 | `catalog_reference` | str | Optional; ignored |
 
-Derived: `repeatable = len(product_ids) == 0` (research R11).
+Derived: `repeatable = len(product_ids) == 0` (research R11). A category that is not in the list is treated as repeatable by the merge rule: pain points with an unknown category are never merged (they fail check 16).
 
 The file's top-level `rules` object is sent to the model as classification guidance; it never changes rule-based behaviour (FR-013a, TC-D12).
 
@@ -83,7 +83,7 @@ The shape the model must return is in [contracts/model-output.md](contracts/mode
 | `discovery_questions` | list of `(pain_point_ref, question)` |
 | `general_questions` | list of `(category_id, question)` |
 
-Parsing raises `GenerationError` only for invalid JSON or wrong shape (research R8). Unknown extra keys are ignored (TC-S06).
+Parsing raises `GenerationError` only for invalid JSON or wrong shape (research R8); a pain-point `ref` used more than once is a wrong shape. Unknown extra keys are ignored (TC-S06).
 
 ## Output entities (the visit card)
 
@@ -186,6 +186,7 @@ restaurant_id
        2. build prompt + JSON schema; llm.generate()  ── LLMError / bad JSON / bad shape ─▶ GenerationError
        3. parse → ModelAnalysis (extra keys ignored)
        4. merge pain points: same non-repeatable category → one pain point,            FR-008
+          (repeatable: listed category without products, or unknown category)
           evidence concatenated in order; refs remapped; IDs PP1..n assigned
        5. attach text_source to each evidence item from the restaurant's reviews
        6. confidence per pain point (distinct review IDs)                              FR-011

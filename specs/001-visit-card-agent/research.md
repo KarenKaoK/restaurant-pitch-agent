@@ -96,7 +96,7 @@ Each entry records a decision, why it was taken and what else was considered. Al
 
 ## R11. Repeatable category
 
-- **Decision**: A category whose `product_ids` list is empty may appear in several pain points; any other category may appear once (merge rule and check 18). In the real table the only such category is `other_unmapped`; in fixtures it is `c_none` (TC-K18b).
+- **Decision**: A category whose `product_ids` list is empty may appear in several pain points; any other category may appear once (merge rule and check 18). In the real table the only such category is `other_unmapped`; in fixtures it is `c_none` (TC-K18b). A category that is not in the table is never merged either: the card keeps the model output as returned and check 16 reports it (TC-C11).
 - **Rationale**: FR-008 is phrased as "a category with mapped products appears at most once". Deriving the rule from the table avoids hard-coding a category name and makes fixtures work unchanged.
 
 ## R12. Evaluation output and run metadata

@@ -72,3 +72,17 @@ def tmp_data_dir(tmp_path) -> Path:
 @pytest.fixture
 def model_output():
     return build_model_output
+
+
+@pytest.fixture
+def fixture_catalog():
+    from pitch_agent.loaders import load_catalog
+
+    return load_catalog(FIXTURE_DATA_DIR / "products")
+
+
+@pytest.fixture
+def fixture_mapping(fixture_catalog):
+    from pitch_agent.loaders import load_mapping
+
+    return load_mapping(FIXTURE_DATA_DIR / "products" / "pain-point-product-mapping.json", fixture_catalog)

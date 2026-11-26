@@ -45,6 +45,7 @@ The single model call made for an eligible restaurant (research R7). The same co
 | Provider raised an error | `GenerationError` |
 | Not valid JSON | `GenerationError` |
 | Missing required key, or wrong type (e.g. `pain_points` not a list, `quote` not a string) | `GenerationError` |
+| Two pain points with the same `ref` | `GenerationError` |
 | Extra keys anywhere (e.g. `"products": [...]`) | Ignored (TC-S06) |
 | Unknown `category_id`, unknown or foreign `review_id`, non-verbatim or short quote, empty `evidence`, question ref matching no pain point | Accepted unchanged; reported by deterministic checks (research R8) |
 | `general_questions` given while `pain_points` is non-empty | Ignored (FR-017a: general questions never appear on a card with pain points) |

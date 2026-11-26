@@ -137,6 +137,7 @@ Notation used below: `PP(category, [review IDs])` is a pain point; `cand(product
 | TC-C08 | FR-008 | Model stub returns c_cash twice: [F01-001] and [F01-002] | Card has one PP(c_cash, [F01-001, F01-002]) with confidence `high` |
 | TC-C09 | FR-008 | Model stub returns c_none twice for two distinct issues: [F01-004] and [F01-005] | Two separate `c_none` pain points are allowed |
 | TC-C10 | FR-012 | dish-pos addresses PP(c_kitchen, [F01-003]) `medium` and PP(c_order) with no evidence | Product confidence `medium`; support = 1; `pain_point_ids` lists only the c_kitchen pain point |
+| TC-C11 | FR-008 | Model stub returns `c_unknown` (not in FX-MAP) twice: [F01-001] and [F01-002] | Two separate pain points (not merged); no candidates |
 
 ## D. Candidates and support count (L1)
 
