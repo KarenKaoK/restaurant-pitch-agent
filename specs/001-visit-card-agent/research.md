@@ -31,14 +31,21 @@ Each entry records a decision, why it was taken and what else was considered. Al
 
 - **Decision**:
   - **`mock`**: returns fixed responses. In tests, responses are given in code (per restaurant ID, or a function, or an exception to raise). From the CLI, `--mock-responses FILE` loads a JSON file `{restaurant_id: response}`. A response can be a model-output object, `{"raw": "<text>"}` (to simulate unparseable output) or `{"error": "<message>"}` (to simulate a failed call). A restaurant not in the file gets an empty analysis (no pain points). The mock records every request, so tests can assert that it was or was not called (TC-E06, TC-I07, TC-V02, TC-V09).
-  - **`ollama`**: `POST {host}/api/chat` with `stream: false`, `format: <json_schema>` (Ollama's structured output), `options: {temperature: 0, seed: 42, num_ctx: 8192}`. Default host `http://localhost:11434`. A connection error, HTTP error or timeout raises `LLMError` with a hint to start Ollama or pull the model.
+  - **`ollama`**: `POST {host}/api/chat` with `stream: false`, `think: false`, `format: <json_schema>` (Ollama's structured output), `options: {temperature: 0, seed: 42, num_ctx: 8192}`. Default host `http://localhost:11434`. A connection error, HTTP error, timeout (also while connecting) or a connection lost mid-response raises `LLMError` with a hint that fits the error (start Ollama, pull the model, raise the timeout, or check that Ollama is still running). `think: false` was added on 2026-11-26 after the first smoke run (T053): `granite4.2:8b` is thinking-capable and thinks by default, which is too slow on the CPU-only development machine.
 - **Rationale**: The owner wants no paid API to be a precondition. `mock` covers L1–L2 tests and pipeline development; Ollama runs a local model with no API key. `temperature: 0` and a fixed seed reduce run-to-run variation (v1 runs each case once, constitution VI). The largest prompt (R06: 37 reviews, about 14 words each, plus 21 categories with definitions, signals and exclusions) is roughly 4–5k tokens, so `num_ctx: 8192` is enough; Ollama's smaller default context would silently truncate the prompt.
 - **Alternatives**: Ollama's OpenAI-compatible endpoint (also works, but the native endpoint has first-class JSON-schema `format`); llama.cpp server directly (more setup for the owner).
 
 ## R5. Default local model
 
-- **Decision**: Default model `qwen3:8b`, overridable by configuration. The final default is confirmed by the owner after the first real evaluation run (see Open items in the plan).
+- **Decision**: Default model `granite4.2:8b` (IBM Granite 4.2 8B instruct), overridable by configuration. Changed from `qwen3:8b` by the owner on 2026-11-26, before Phase 5. The final default is still confirmed by the owner after the first real evaluation run (see Open items in the plan); `qwen3:8b` and a 4B model stay as comparison candidates.
+- **Why Granite 4.2 8B** (based on published reports, not yet measured on this task):
+  - 8B is large enough for fine-grained classification into 21 categories with exclusions; 4B models are a speed fallback.
+  - ~~It answers without a reasoning ("think") phase~~ — **corrected 2026-11-26**: `ollama show granite4.2:8b` lists the `thinking` capability and it thinks by default. Thinking is switched off per request with `think: false` (R4), which the smoke run confirmed works; the same switch applies to `qwen3:8b`. TwIL-8B is a dedicated reasoning model and is still not a fit.
+  - Reported as reliable for structured JSON output; one CPU-only test reported Qwen3 failing a JSON check.
+  - Apache 2.0 licence.
+- **Risks**: the JSON reliability claim is not independently verified; verbatim quoting (check 3) is hard for every small model; the Ollama tag `granite4.2:8b` must be confirmed on the Ollama library when Ollama is installed.
 - **Rationale**: An 8B instruction model with good JSON-schema adherence fits the development machine (16 GB RAM, Intel CPU, no GPU acceleration). Smaller models (≤ 3B) are faster but weaker at fine-grained classification with exclusions.
+- **Measured speed** (T053, 2026-11-26, `granite4.2:8b` Q4_K_M, i5-8279U, 16 GB, after a reboot with no swap in use): prompt processing roughly 12–60 tokens/s, generation about 2.4 tokens/s (memory-bandwidth bound). Before the reboot, with ~18 GB of swap in use, both were about 2 tokens/s and the first R03 run timed out after 900 s. Prompts are about 4.4k tokens (R03) to 5.1k tokens (R06).
 - **Expected speed**: CPU-only inference of an 8B model is slow — roughly a few minutes per restaurant, so a full evaluation of 13 eligible restaurants may take about an hour. Closed and chain restaurants (R10, R11) never call the model. This is acceptable for v1 (one run per checkpoint) and is stated in the quickstart.
 - **Alternatives**: `llama3.1:8b` (widely used, similar size; can be selected with `--model`); a smaller model for faster development runs (selectable the same way; quality is measured by the evaluation).
 
@@ -49,7 +56,7 @@ Each entry records a decision, why it was taken and what else was considered. Al
   | Setting | CLI flag | Environment variable | Default |
   |---|---|---|---|
   | Provider | `--provider` | `PITCH_AGENT_LLM_PROVIDER` | `ollama` |
-  | Model | `--model` | `PITCH_AGENT_LLM_MODEL` | `qwen3:8b` for `ollama`, `mock` for `mock` |
+  | Model | `--model` | `PITCH_AGENT_LLM_MODEL` | `granite4.2:8b` for `ollama`, `mock` for `mock` |
   | Ollama host | — | `OLLAMA_HOST` | `http://localhost:11434` |
   | Request timeout (s) | — | `PITCH_AGENT_LLM_TIMEOUT` | `900` |
 

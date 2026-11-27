@@ -13,17 +13,17 @@ LLMRequest
 
 LLMClient (protocol)
   provider: str        # e.g. "mock", "ollama" — recorded in the evaluation report
-  model: str           # e.g. "qwen3:8b" — recorded in the evaluation report
+  model: str           # e.g. "granite4.2:8b" — recorded in the evaluation report
   generate(request: LLMRequest) -> str     # raw answer text; raises LLMError on failure
 
 LLMError(Exception)    # call failed: connection, HTTP status, timeout, provider error
 
 LLMConfig
   provider: str
-  model: str | None
+  model: str | None    # None → the provider's default model (contracts/cli.md)
   options: dict        # provider-specific (e.g. host, timeout, mock responses)
 
-create_llm(config: LLMConfig) -> LLMClient   # raises ConfigError for an unknown provider
+create_llm(config: LLMConfig) -> LLMClient   # raises ConfigError for an unknown provider or an invalid setting
 ```
 
 ## Providers in v1
@@ -41,14 +41,21 @@ create_llm(config: LLMConfig) -> LLMClient   # raises ConfigError for an unknown
 
 ### `ollama`
 
-- `POST {OLLAMA_HOST}/api/chat`, body:
+- `POST {OLLAMA_HOST}/api/chat`, body (`OLLAMA_HOST` may be given in Ollama's own format without a scheme, e.g. `0.0.0.0:11434`; `http://` is then added, and a trailing `/` is ignored):
   - `model`;
   - `messages`: system + user;
   - `format`: `json_schema`;
   - `stream`: `false`;
+  - `think`: `false` (no reasoning phase before the answer; thinking-capable models such as `granite4.2:8b` think by default and are too slow on CPU);
   - `options`: `{temperature: 0, seed: 42, num_ctx: 8192}`.
 - Returns `message.content`.
-- Connection refused, HTTP ≥ 400, timeout or a missing `message.content` → `LLMError`. The message names the host and model and suggests `ollama serve` / `ollama pull <model>`.
+- Connection refused, HTTP ≥ 400, timeout, a connection lost before the response is complete or a missing `message.content` → `LLMError`. The message names the host and model and gives a hint that fits the error:
+  - cannot connect → start Ollama (`ollama serve` or the Ollama app);
+  - HTTP ≥ 400 → check that the model is pulled (`ollama pull <model>`);
+  - timeout, while connecting or while waiting for the response → raise `PITCH_AGENT_LLM_TIMEOUT` (seconds) or use a smaller model;
+  - connection lost (closed without a response, or the body cut off) → check that Ollama is still running (it may have run out of memory);
+  - missing `message.content` → the Ollama response is unexpected (no fixed hint).
+- `PITCH_AGENT_LLM_TIMEOUT` must be a positive, finite number of seconds; any other value raises `ConfigError` naming the variable when the client is created.
 - No API key; nothing secret is sent or logged.
 
 ## Adding a provider later (not in v1)

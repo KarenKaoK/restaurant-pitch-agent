@@ -24,7 +24,7 @@ def test_default_provider_is_ollama():
     assert resolve_llm_config(env={}).provider == "ollama"
 
 
-@pytest.mark.parametrize("provider, model", [("ollama", "qwen3:8b"), ("mock", "mock")])
+@pytest.mark.parametrize("provider, model", [("ollama", "granite4.2:8b"), ("mock", "mock")])
 def test_default_model_per_provider(provider, model):
     assert resolve_llm_config(provider=provider, env={}).model == model
 
@@ -49,3 +49,25 @@ def test_unknown_provider_lists_available_providers():
     with pytest.raises(ConfigError) as e:
         create_llm(LLMConfig("gpt", None))
     assert "gpt" in str(e.value) and "mock" in str(e.value)
+
+
+def test_default_config_creates_ollama_llm():
+    from pitch_agent.llm.ollama import OllamaLLM
+
+    llm = create_llm(resolve_llm_config(env={}))
+    assert isinstance(llm, OllamaLLM)
+    assert (llm.provider, llm.model) == ("ollama", "granite4.2:8b")
+
+
+def test_ollama_model_from_flag():
+    llm = create_llm(resolve_llm_config(provider="ollama", model="qwen3:8b", env={}))
+    assert llm.model == "qwen3:8b"
+
+
+def test_unknown_provider_lists_ollama():
+    with pytest.raises(ConfigError, match="mock, ollama"):
+        create_llm(LLMConfig("gpt", None))
+
+
+def test_ollama_without_model_uses_default_model():
+    assert create_llm(LLMConfig("ollama", None)).model == "granite4.2:8b"

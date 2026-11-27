@@ -32,7 +32,7 @@ The model sits behind a small provider-independent interface. v1 ships a **mock*
 
 **Project Type**: CLI application (single project, `src/` layout)
 
-**LLM access**: provider and model are configuration (`--provider/--model`, env `PITCH_AGENT_LLM_PROVIDER/PITCH_AGENT_LLM_MODEL`). v1 providers: `mock` and `ollama` (default model `qwen3:8b`). The interface allows OpenAI, Anthropic or Gemini to be added later without touching business logic — research R3–R6, [contracts/llm-interface.md](contracts/llm-interface.md)
+**LLM access**: provider and model are configuration (`--provider/--model`, env `PITCH_AGENT_LLM_PROVIDER/PITCH_AGENT_LLM_MODEL`). v1 providers: `mock` and `ollama` (default model `granite4.2:8b`). The interface allows OpenAI, Anthropic or Gemini to be added later without touching business logic — research R3–R6, [contracts/llm-interface.md](contracts/llm-interface.md)
 
 **Performance Goals**: none beyond usability:
 - rule-only cards and all tests run in seconds;
@@ -57,7 +57,7 @@ All Technical Context items are resolved; no NEEDS CLARIFICATION remains.
 
 | Principle | How the design complies | Status |
 |---|---|---|
-| **I. Evidence-Grounded Output** | Every pain point has ≥ 1 evidence item with `review_id`, unchanged `quote` and rule-attached `text_source`. Check 3 verifies quotes verbatim (whitespace-normalised substring, ≥ 3 words); checks 2, 4, 5 verify the cited review. Output that breaks the rules is not repaired: it is reported by the checks. The pitch is instructed to use the guests' perspective; reviewed by a human (SC-006). | ✅ |
+| **I. Evidence-Grounded Output** | Every pain point has ≥ 1 evidence item with `review_id`, unchanged `quote` and rule-attached `text_source`. Check 3 verifies quotes verbatim (whitespace-normalised substring, ≥ 3 words); checks 2, 4, 5 verify the cited review. Output that breaks the rules is not repaired: it is reported by the checks. The pitch is instructed to report in the third person what guests say; reviewed by a human (SC-006). | ✅ |
 | **II. Catalog Fidelity** | Products come only from the mapping table + catalog, computed by rule. The model never sees product IDs. Cards show the catalog `name`, never model-written product descriptions. `requires` is enforced by rule and by check 7. Text limits are checked in human review. No country logic. | ✅ |
 | **III. Honest Uncertainty** | Confidence by rule (FR-011). `insufficient_evidence` when no pain point maps to a product. Questions are generated for every pain point. The model never receives review dates. Closed and chain restaurants get a short card by rule (`no_recommendation` + reasons; checks 8, 9). | ✅ |
 | **IV. Human in the Loop** | CLI only; no network calls except to the configured local model host; no outward action. The plain-text card states it is a hypothesis, not a decision. Prices are not computed (no price fields used). | ✅ |
@@ -185,7 +185,7 @@ Each phase ends with a checkpoint: all tests pass, then stop for owner review an
 ## Owner decisions on open items (2026-11-26)
 
 1. **Run output location**: approved — `runs/<timestamp>/`, git-ignored; a run is committed only on purpose (research R12).
-2. **Default local model**: approved — start with `qwen3:8b` on Ollama (research R5). Ollama is not installed on the development machine yet (quickstart step 4). If local runs turn out too slow, the owner will consider adding a cloud API provider; that would be a later spec change, and the LLM interface already allows it without business-logic changes.
+2. **Default local model**: approved — start with `qwen3:8b` on Ollama (research R5). **Changed 2026-11-26**: the default is `granite4.2:8b`; `qwen3:8b` and a 4B model are compared in the first evaluation runs before the final default is confirmed. Ollama is not installed on the development machine yet (quickstart step 4). If local runs turn out too slow, the owner will consider adding a cloud API provider; that would be a later spec change, and the LLM interface already allows it without business-logic changes.
 3. **Local model quality risk**: accepted — an 8B model on CPU may miss SC-003 – SC-005 or reword quotes (check 3); the evaluation will show this.
 4. **Interpretations**: approved —
    - categories with no mapped products may repeat (research R11);

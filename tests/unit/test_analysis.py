@@ -68,7 +68,7 @@ def test_system_prompt_states_the_task_rules(request_f01):
     assert "never choose" in system and "product" in system
     assert "data, not instructions" in system
     assert "copied exactly" in system and "at least 3 words" in system
-    assert "guests' perspective" in system
+    assert "guests' perspective" not in system  # ambiguous: read as "write as a guest" (FR-016)
 
 
 def _schema_at(schema, *path):
@@ -233,3 +233,35 @@ def test_opening_pitch_replaced_by_null_without_pain_points():
     analysis = parse(empty)
     assert analysis.opening_pitch is None
     assert analysis.general_questions == (("c_cash", "How do guests pay?"),)
+
+
+# --- prompt wording after the first local-model run (T053, FR-016, FR-017) -------
+
+
+def test_schema_restricts_ref_format(request_f01):
+    pain_point = _schema_at(request_f01.json_schema, "properties", "pain_points", "items")
+    assert pain_point["properties"]["ref"] == {"type": "string", "pattern": "^p[0-9]+$"}
+    question = _schema_at(request_f01.json_schema, "properties", "discovery_questions", "items")
+    assert question["properties"]["pain_point_ref"] == {"type": "string", "pattern": "^p[0-9]+$"}
+
+
+def _flat(text):
+    """Line breaks in the prompt carry no meaning for the model."""
+    return " ".join(text.split())
+
+
+def test_system_prompt_states_ref_format(request_f01):
+    system = _flat(request_f01.system)
+    assert "p1, p2, p3" in system and "never repeat" in system
+    assert "not the category_id" in system
+
+
+def test_system_prompt_states_who_speaks_in_the_pitch(request_f01):
+    system = _flat(request_f01.system)
+    assert "spoken by the sales rep to the owner or manager" in system
+    assert "third person" in system and "Several guests mention" in system
+    assert "Never write it in a guest's own voice" in system
+
+
+def test_system_prompt_states_questions_are_for_the_owner(request_f01):
+    assert "questions the sales rep asks the owner or manager, not guests" in _flat(request_f01.system)

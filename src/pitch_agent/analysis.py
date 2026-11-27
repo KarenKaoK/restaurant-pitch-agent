@@ -25,12 +25,17 @@ You help a sales rep prepare a visit to a restaurant by reading its public revie
 
 Task:
 - Classify the guests' problems into pain points, using only the categories given.
+- Give each pain point a ref: p1, p2, p3, ... in order. Refs never repeat; a ref is
+  not the category_id.
 - For each pain point give evidence: the review_id and a quote copied exactly from that
   review's text, at least 3 words long. Do not reword, translate or correct quotes.
 - Write a short restaurant description based only on the given data and reviews.
-- Write an opening pitch from the guests' perspective that refers only to the listed pain
-  points and never blames or accuses the owner.
-- Give at least one discovery question per pain point, linked by its ref.
+- Write an opening pitch. It is spoken by the sales rep to the owner or manager and
+  reports in the third person what guests say in their reviews
+  ("Several guests mention ..."). Never write it in a guest's own voice ("we", "our
+  visit"). It refers only to the listed pain points and never blames or accuses the owner.
+- Discovery questions are open questions the sales rep asks the owner or manager, not
+  guests. Give at least one per pain point, linked by its ref.
 - Fill general_questions (linked to a category) only when there are no pain points.
 
 Rules:
@@ -63,6 +68,9 @@ def _string(enum: list[str] | None = None) -> dict:
     return {"type": "string", "enum": enum} if enum else {"type": "string"}
 
 
+REF = {"type": "string", "pattern": "^p[0-9]+$"}
+
+
 def _object(properties: dict) -> dict:
     return {"type": "object", "properties": properties, "required": list(properties)}
 
@@ -71,13 +79,13 @@ def _schema(category_ids: list[str], review_ids: list[str]) -> dict:
     evidence = _object({"review_id": _string(review_ids), "quote": _string()})
     pain_point = _object(
         {
-            "ref": _string(),
+            "ref": REF,
             "category_id": _string(category_ids),
             "description": _string(),
             "evidence": {"type": "array", "items": evidence},
         }
     )
-    question = _object({"pain_point_ref": _string(), "question": _string()})
+    question = _object({"pain_point_ref": REF, "question": _string()})
     general = _object({"category_id": _string(category_ids), "question": _string()})
     return _object(
         {

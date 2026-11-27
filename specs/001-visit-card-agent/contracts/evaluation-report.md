@@ -24,7 +24,7 @@ runs/<YYYYMMDDTHHMMSSZ>/
     "git_commit": "1b2650d…",
     "git_dirty": false,
     "provider": "ollama",
-    "model": "qwen3:8b",
+    "model": "granite4.2:8b",
     "labels_path": "data/eval/expected.csv",
     "labels_sha256": "…"
   },
