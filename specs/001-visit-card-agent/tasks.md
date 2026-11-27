@@ -208,7 +208,7 @@ At each **Checkpoint**: run `uv run pytest` (all tests must pass), stop, wait fo
 - [ ] T065 Verify the data-access boundary in `src/pitch_agent/`: no module outside `src/pitch_agent/evaluation/` imports `pitch_agent.evaluation`, and no code opens `data/raw/` (constitution V, research R13); fix any violation
 - [ ] T066 Run quickstart steps 1–3 from [quickstart.md](quickstart.md) exactly as written and confirm every expected result
 - [ ] T067 Run the real evaluation with Ollama (quickstart step 5: `uv run pitch-agent eval`) and check `runs/<timestamp>/report.md` for SC-001 – SC-005 and the recorded git commit, provider and model
-- [ ] T068 Owner human review (SC-006) of `runs/<timestamp>/cards/*.txt`: opening pitches from the guests' perspective without blame, no recommendation breaking a product limit in `data/products/`; any agent behaviour change goes through the spec first and is logged in `docs/spec-changes.md`
+- [ ] T068 Owner human review (SC-006) of `runs/<timestamp>/cards/*.txt`: opening pitches reporting in the third person what guests say, without blame, no recommendation breaking a product limit in `data/products/`; any agent behaviour change goes through the spec first and is logged in `docs/spec-changes.md`
 
 **Checkpoint**: Feature complete — run all tests, stop for owner review of the evaluation results, propose a commit message (T065–T068); the run folder is committed only if the owner decides so (research R12).
 

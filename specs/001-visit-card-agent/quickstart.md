@@ -69,7 +69,7 @@ Expected:
 - **Speed**: on the development machine (CPU only), a card takes a few minutes. The full evaluation takes roughly an hour. Progress is printed per restaurant; R10 and R11 finish instantly.
 - **Run folder**: the report records the git commit, `provider: ollama` and the model name (FR-032).
 - **Acceptance**: the run meets SC-001 – SC-005 ([spec.md](spec.md#measurable-outcomes)).
-- **Human review (SC-006)**: read the opening pitches and recommendations in `runs/<timestamp>/cards/*.txt`. Every pitch should be worded from the guests' perspective without blaming the owner, and no recommendation should break a product limit in `data/products/`.
+- **Human review (SC-006)**: read the opening pitches and recommendations in `runs/<timestamp>/cards/*.txt`. Every pitch should report in the third person what guests say, without blaming the owner, and no recommendation should break a product limit in `data/products/`.
 
 If Ollama is not running, the command fails with a message naming the host and model and suggesting `ollama serve` / `ollama pull`; no partial card is written.
 

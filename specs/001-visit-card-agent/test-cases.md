@@ -341,7 +341,7 @@ Synthetic results for three restaurants unless stated.
 | Requirement | How it is verified |
 |---|---|
 | Classification of reviews into categories | Evaluation against `expected.csv` (SC-003 – SC-005) |
-| FR-016 opening pitch from the guests' perspective, no blame | Human review at each checkpoint (SC-006) |
+| FR-016 opening pitch reports in the third person what guests say, no blame | Human review at each checkpoint (SC-006) |
 | FR-014 product descriptions consistent with official facts; sales notes not presented as facts | Human review |
 | Product limits written as text in the catalog | Human review (constitution Principle II) |
 | FR-018 no quotes, offers or discounts | Human review |

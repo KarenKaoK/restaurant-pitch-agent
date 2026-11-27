@@ -20,7 +20,7 @@ LLMError(Exception)    # call failed: connection, HTTP status, timeout, provider
 
 LLMConfig
   provider: str
-  model: str | None
+  model: str | None    # None → the provider's default model (contracts/cli.md)
   options: dict        # provider-specific (e.g. host, timeout, mock responses)
 
 create_llm(config: LLMConfig) -> LLMClient   # raises ConfigError for an unknown provider or an invalid setting
@@ -41,7 +41,7 @@ create_llm(config: LLMConfig) -> LLMClient   # raises ConfigError for an unknown
 
 ### `ollama`
 
-- `POST {OLLAMA_HOST}/api/chat`, body:
+- `POST {OLLAMA_HOST}/api/chat`, body (`OLLAMA_HOST` may be given in Ollama's own format without a scheme, e.g. `0.0.0.0:11434`; `http://` is then added, and a trailing `/` is ignored):
   - `model`;
   - `messages`: system + user;
   - `format`: `json_schema`;

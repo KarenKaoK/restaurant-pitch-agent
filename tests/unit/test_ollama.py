@@ -203,3 +203,20 @@ def test_invalid_timeout_is_config_error(value):
     with pytest.raises(ConfigError) as e:
         OllamaLLM(MODEL, env={"PITCH_AGENT_LLM_TIMEOUT": value})
     assert "PITCH_AGENT_LLM_TIMEOUT" in str(e.value) and repr(value) in str(e.value)
+
+
+@pytest.mark.parametrize("given, used", [
+    ("0.0.0.0:11434", "http://0.0.0.0:11434"),
+    ("localhost:11434/", "http://localhost:11434"),
+    ("http://localhost:11434/", "http://localhost:11434"),
+    ("https://ollama.example:443", "https://ollama.example:443"),
+])
+def test_host_format(given, used):
+    assert OllamaLLM(MODEL, env={"OLLAMA_HOST": given}).host == used
+    assert OllamaLLM(MODEL, host=given, env={}).host == used
+
+
+def test_host_without_scheme_reaches_api_chat(stub):
+    bare = stub.host.removeprefix("http://") + "/"
+    assert OllamaLLM(MODEL, env={"OLLAMA_HOST": bare}).generate(REQUEST) == '{"ok": true}'
+    assert stub.requests[0]["path"] == "/api/chat"

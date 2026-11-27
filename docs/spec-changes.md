@@ -6,13 +6,15 @@ Behaviour changes to a committed spec are logged here, newest first. Each entry 
 
 - **Spec**: `specs/001-visit-card-agent/contracts/llm-interface.md`, `specs/001-visit-card-agent/contracts/cli.md`
 - **Baseline**: commit `fc519ac`
-- **Source**: Codex review of PR #1 (also found by `/code-review`); each finding reproduced before the fix. `spec.md` is unchanged.
+- **Source**: Codex review and `/code-review` of PR #1; each finding reproduced before the fix. `spec.md` is unchanged by these rows (see the FR-016 note in the entry below).
 
 | Area | Before | After | Reason |
 |---|---|---|---|
 | Invalid `PITCH_AGENT_LLM_TIMEOUT` | Undefined; `15m` crashed the CLI with a traceback, `0`, negative, `inf` and `nan` were accepted | Must be a positive, finite number; otherwise `ConfigError` naming the variable, shown by the CLI as a usage error (exit 2) | Actionable message instead of a traceback or a misleading failure |
 | Connection lost mid-response | Undefined; `RemoteDisconnected` / `IncompleteRead` escaped as a traceback | `LLMError` with the hint to check that Ollama is still running; the CLI reports a generation failure (exit 1) | Ollama can be killed while generating (out of memory on a 16 GB machine) |
 | Timeout while connecting | Reported as "cannot connect … Is Ollama running?" | Reported as a timeout with the `PITCH_AGENT_LLM_TIMEOUT` hint | The contract already required the timeout hint; urllib wraps a connect timeout in `URLError` |
+| `OLLAMA_HOST` format | Undefined; `0.0.0.0:11434` (Ollama's own format, no scheme) crashed the CLI with `ValueError` | A missing scheme gets `http://`; a trailing `/` is ignored | Users set `OLLAMA_HOST` for `ollama serve` in Ollama's format |
+| `LLMConfig.model` is `None` for `ollama` | `"model": null` sent to Ollama | The provider default (`granite4.2:8b`) is used, as for `mock` | Callers that skip `resolve_llm_config` |
 
 ## 2026-11-26 — 001-visit-card-agent: first local-model run (T053)
 
@@ -23,8 +25,13 @@ Behaviour changes to a committed spec are logged here, newest first. Each entry 
 | Area | Before | After | Reason |
 |---|---|---|---|
 | Opening pitch voice (FR-016) | "Worded from the guests' perspective"; speaker undefined | Spoken by the rep to the owner or manager, reporting in the third person what guests say; never in a guest's own voice | The phrase was read as "write as a guest"; Story 1 #4 already gives the intended example "several guests mention…" |
+| Default model (plan.md owner decision 2, research R5, contracts/cli.md) | `qwen3:8b` | `granite4.2:8b` | Owner decision before Phase 5; final default decided by the real evaluation (T067) |
+| Ollama request (contracts/llm-interface.md, research R4) | No `think` field; one generic error message | `think: false`; each error gives a hint that fits it (start Ollama, pull the model, raise the timeout) | Granite thinks by default and is too slow on CPU; actionable errors |
+| Pain-point refs (contracts/model-output.md) | `ref` unique, format free | `p1`, `p2`, … (schema pattern `^p[0-9]+$`) | The model used category IDs as refs, which collided |
 
-Not a spec change, done in the same step: the model prompt now states that discovery questions are asked to the owner or manager (already required by FR-017), and that pain-point refs are `p1`, `p2`, … and unique (the first run failed with a duplicate ref because the model used category IDs as refs).
+Not a spec change, done in the same step: the model prompt now states that discovery questions are asked to the owner or manager (already required by FR-017).
+
+Completed on 2026-11-27 (PR #1 review): FR-016, Story 1 #4, SC-006 and the documents that quote them still said "worded from the guests' perspective" next to the new wording, and the prompt repeated it; the phrase is removed everywhere so only the "After" wording above remains.
 
 ## 2026-11-26 — 001-visit-card-agent: Phase 2 review
 

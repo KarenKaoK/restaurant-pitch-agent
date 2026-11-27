@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from pitch_agent.config import DEFAULT_MODELS
 from pitch_agent.llm import ConfigError, LLMClient, LLMConfig
 from pitch_agent.llm.mock import MockLLM
 from pitch_agent.llm.ollama import OllamaLLM
@@ -12,7 +13,7 @@ def _mock(config: LLMConfig) -> LLMClient:
 
 
 def _ollama(config: LLMConfig) -> LLMClient:
-    return OllamaLLM(config.model)
+    return OllamaLLM(config.model or DEFAULT_MODELS["ollama"])
 
 
 PROVIDERS = {"mock": _mock, "ollama": _ollama}

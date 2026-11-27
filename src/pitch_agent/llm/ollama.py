@@ -22,6 +22,13 @@ TIMEOUT_ENV = "PITCH_AGENT_LLM_TIMEOUT"
 OPTIONS = {"temperature": 0, "seed": 42, "num_ctx": 8192}
 
 
+def _normalise_host(host: str) -> str:
+    """Accept Ollama's own OLLAMA_HOST format (no scheme, e.g. 0.0.0.0:11434)."""
+    if "://" not in host:
+        host = f"http://{host}"
+    return host.rstrip("/")
+
+
 def _timeout_from(env: Mapping[str, str]) -> float:
     """PITCH_AGENT_LLM_TIMEOUT as a positive, finite number of seconds."""
     value = env.get(TIMEOUT_ENV)
@@ -48,7 +55,7 @@ class OllamaLLM:
     ):
         env = os.environ if env is None else env
         self.model = model
-        self.host = host or env.get(HOST_ENV) or DEFAULT_HOST
+        self.host = _normalise_host(host or env.get(HOST_ENV) or DEFAULT_HOST)
         self.timeout = float(timeout) if timeout is not None else _timeout_from(env)
 
     def _error(self, problem: str, hint: str = "") -> LLMError:

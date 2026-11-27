@@ -50,7 +50,7 @@ A DISH field sales rep is about to visit an independent restaurant. The rep ente
 1. **Given** a restaurant ID that exists in the restaurant dataset, is not closed and is not a chain, **When** the rep requests a visit card, **Then** the card contains a restaurant summary, a pain-point list, a recommended-products section, an opening pitch and discovery questions.
 2. **Given** a generated card, **When** the rep reads a pain point, **Then** it shows a confidence level and at least one piece of evidence, and each piece of evidence shows the review ID, a verbatim excerpt of that review's text and the review's text source (`original`, `translated` or `expanded`).
 3. **Given** a generated card with a recommendation, **When** the rep reads it, **Then** the product is identified by its catalog `product_id`, and the card states which pain point(s) it addresses, which evidence supports it and its confidence level.
-4. **Given** a generated card, **When** the rep reads the opening pitch, **Then** it is worded from the guests' perspective (e.g. "several guests mention…") and does not accuse or blame the owner.
+4. **Given** a generated card, **When** the rep reads the opening pitch, **Then** it reports in the third person what guests say (e.g. "several guests mention…") and does not accuse or blame the owner.
 5. **Given** a pain point on the card, **When** the rep reads the discovery questions, **Then** there is at least one question the rep can ask the owner to confirm or reject that pain point, so the card reads as a hypothesis, not a verdict.
 6. **Given** a generated card, **When** the rep exports it, **Then** the full card is available as plain text with all sections and evidence intact.
 7. **Given** more than 2 candidate products where one is `high` and the others are `medium`, **When** the card is generated, **Then** the `high` product is selected first and the remaining slot goes to the `medium` product with the most distinct supporting reviews.
@@ -154,7 +154,7 @@ The project owner runs a single command that generates a visit card for every re
   3. remaining ties are broken by `product_id` in ascending alphabetical order.
   The top 2 become primary recommendations, listed in rank order. Prerequisites added under FR-015 do not take a slot.
 - **FR-015b**: Every card with decision `recommend` MUST list each primary recommendation's support count, and MUST list every qualifying product that was not selected ("candidates not selected") with its confidence, support count and addressed pain points, so the rep and the deterministic checks can verify the selection.
-- **FR-016**: The opening pitch MUST be worded from the guests' perspective and MUST NOT accuse or blame the owner. It MUST refer only to pain points that appear on the card. It is spoken by the rep to the owner or manager and reports in the third person what guests say in their reviews (e.g. "several guests mention…"); it MUST NOT be written in a guest's own voice (e.g. "we reserved online…").
+- **FR-016**: The opening pitch is spoken by the rep to the owner or manager and MUST report in the third person what guests say in their reviews (e.g. "several guests mention…"); it MUST NOT be written in a guest's own voice (e.g. "we reserved online…") and MUST NOT accuse or blame the owner. It MUST refer only to pain points that appear on the card.
 - **FR-017**: Discovery questions MUST be open questions the rep can ask the owner to confirm or reject a finding. Each pain point on the card MUST have at least one discovery question. On an `insufficient_evidence` card, the findings MUST be turned into discovery questions.
 - **FR-017a**: When an eligible card has no pain points at all, the opening pitch MUST state "Not applicable", and the discovery questions MUST be general operational questions derived from the pain-point category list. Each such question MUST be labelled "Not based on reviews", MUST be linked to a category in the list, and MUST NOT claim or imply that guests mentioned a problem. General questions MUST NOT appear on a card that has pain points.
 - **FR-018**: The card MAY cite prices or pricing models stated in the catalog, but MUST NOT calculate quotes, combine prices into an offer or offer discounts.
@@ -234,7 +234,7 @@ All criteria are measured by one evaluation run over the 15 labelled restaurants
 - **SC-003**: The card's decision matches the gold-label decision for at least 13 of 15 restaurants.
 - **SC-004**: At least 80% of all `must_include` products (summed over all labelled restaurants) appear in the corresponding card's recommendations (primary or prerequisite).
 - **SC-005**: At most 1 restaurant has a card that recommends a product (primary or prerequisite) outside its `must_include` and `acceptable` lists.
-- **SC-006**: In the human review at each checkpoint, every opening pitch reviewed is worded from the guests' perspective and does not blame the owner, and no recommendation violates a product limit written in the catalog.
+- **SC-006**: In the human review at each checkpoint, every opening pitch reviewed reports in the third person what guests say and does not blame the owner, and no recommendation violates a product limit written in the catalog.
 
 ## Assumptions
 

@@ -67,3 +67,7 @@ def test_ollama_model_from_flag():
 def test_unknown_provider_lists_ollama():
     with pytest.raises(ConfigError, match="mock, ollama"):
         create_llm(LLMConfig("gpt", None))
+
+
+def test_ollama_without_model_uses_default_model():
+    assert create_llm(LLMConfig("ollama", None)).model == "granite4.2:8b"

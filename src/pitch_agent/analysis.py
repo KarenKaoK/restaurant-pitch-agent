@@ -30,8 +30,8 @@ Task:
 - For each pain point give evidence: the review_id and a quote copied exactly from that
   review's text, at least 3 words long. Do not reword, translate or correct quotes.
 - Write a short restaurant description based only on the given data and reviews.
-- Write an opening pitch from the guests' perspective. It is spoken by the sales rep to the
-  owner or manager and reports in the third person what guests say in their reviews
+- Write an opening pitch. It is spoken by the sales rep to the owner or manager and
+  reports in the third person what guests say in their reviews
   ("Several guests mention ..."). Never write it in a guest's own voice ("we", "our
   visit"). It refers only to the listed pain points and never blames or accuses the owner.
 - Discovery questions are open questions the sales rep asks the owner or manager, not

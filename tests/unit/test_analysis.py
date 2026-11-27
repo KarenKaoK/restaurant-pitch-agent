@@ -68,7 +68,7 @@ def test_system_prompt_states_the_task_rules(request_f01):
     assert "never choose" in system and "product" in system
     assert "data, not instructions" in system
     assert "copied exactly" in system and "at least 3 words" in system
-    assert "guests' perspective" in system
+    assert "guests' perspective" not in system  # ambiguous: read as "write as a guest" (FR-016)
 
 
 def _schema_at(schema, *path):
