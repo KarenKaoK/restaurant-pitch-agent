@@ -11,7 +11,7 @@ Entry point: `pitch-agent` (console script from `pyproject.toml`; run as `uv run
 | `--model NAME` | env `PITCH_AGENT_LLM_MODEL`, else provider default (`granite4.2:8b` / `mock`) | Model name passed to the provider |
 | `--mock-responses PATH` | none | Only with `--provider mock`: JSON file `{restaurant_id: response}` (see [llm-interface.md](llm-interface.md)) |
 
-An unknown provider name is a usage error that lists the available providers. No option or setting is an API key.
+An unknown provider name is a usage error that lists the available providers. An invalid provider setting (e.g. a `PITCH_AGENT_LLM_TIMEOUT` that is not a positive number) is a usage error that names the setting. No option or setting is an API key.
 
 ## `pitch-agent card RESTAURANT_ID`
 

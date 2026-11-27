@@ -11,7 +11,7 @@ from pitch_agent.checks import run_checks
 from pitch_agent.cli import main
 from pitch_agent.loaders import load_agent_data
 
-ENV_KEYS = ("PITCH_AGENT_LLM_PROVIDER", "PITCH_AGENT_LLM_MODEL")
+ENV_KEYS = ("PITCH_AGENT_LLM_PROVIDER", "PITCH_AGENT_LLM_MODEL", "PITCH_AGENT_LLM_TIMEOUT")
 
 
 @pytest.fixture(autouse=True)
@@ -119,6 +119,16 @@ def test_mock_responses_only_with_mock_provider(fixture_data_dir, f01_responses,
               "--mock-responses", f01_responses])
     assert e.value.code == 2
     assert "--mock-responses" in capsys.readouterr().err
+
+
+def test_invalid_timeout_is_usage_error(fixture_data_dir, monkeypatch, capsys):
+    monkeypatch.setenv("PITCH_AGENT_LLM_TIMEOUT", "15m")
+    with pytest.raises(SystemExit) as e:
+        main(["card", "F01", "--data-dir", str(fixture_data_dir), "--provider", "ollama"])
+    assert e.value.code == 2
+    out, err = capsys.readouterr()
+    assert out == ""
+    assert "PITCH_AGENT_LLM_TIMEOUT" in err and "15m" in err
 
 
 def test_provider_from_environment(fixture_data_dir, monkeypatch, capsys):

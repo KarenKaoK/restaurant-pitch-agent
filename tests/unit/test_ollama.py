@@ -4,11 +4,13 @@ import json
 import socket
 import threading
 import time
+import urllib.error
+import urllib.request
 from http.server import BaseHTTPRequestHandler, HTTPServer
 
 import pytest
 
-from pitch_agent.llm import LLMError, LLMRequest
+from pitch_agent.llm import ConfigError, LLMError, LLMRequest
 from pitch_agent.llm.ollama import OllamaLLM
 
 REQUEST = LLMRequest(system="You classify reviews.", prompt='{"reviews": []}',
@@ -61,6 +63,23 @@ def free_port():
     with socket.socket() as s:
         s.bind(("127.0.0.1", 0))
         return s.getsockname()[1]
+
+
+def serve_once(answer):
+    """A raw socket server for one request; ``answer(conn)`` writes whatever it likes."""
+    server = socket.socket()
+    server.bind(("127.0.0.1", 0))
+    server.listen(1)
+
+    def run():
+        conn, _ = server.accept()
+        conn.recv(65536)
+        answer(conn)
+        conn.close()
+        server.close()
+
+    threading.Thread(target=run, daemon=True).start()
+    return f"http://127.0.0.1:{server.getsockname()[1]}"
 
 
 def assert_names_host_and_model(error, host):
@@ -146,3 +165,41 @@ def test_defaults():
     llm = OllamaLLM(MODEL, env={})
     assert (llm.host, llm.timeout) == ("http://localhost:11434", 900.0)
 
+
+
+def close_without_response(conn):
+    pass
+
+
+def truncated_body(conn):
+    conn.sendall(b"HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nContent-Length: 1000\r\n\r\n{\"message\"")
+
+
+@pytest.mark.parametrize("answer", [close_without_response, truncated_body])
+def test_connection_lost(answer):
+    host = serve_once(answer)
+    with pytest.raises(LLMError) as e:
+        OllamaLLM(MODEL, host=host, timeout=5).generate(REQUEST)
+    message = assert_names_host_and_model(e.value, host)
+    assert "connection lost" in message and "still running" in message
+    assert "ollama pull" not in message
+
+
+def test_connect_timeout(monkeypatch):
+    def urlopen(*args, **kwargs):
+        raise urllib.error.URLError(TimeoutError("timed out"))
+
+    monkeypatch.setattr(urllib.request, "urlopen", urlopen)
+    host = "http://10.255.255.1:11434"
+    with pytest.raises(LLMError) as e:
+        OllamaLLM(MODEL, host=host, timeout=0.5).generate(REQUEST)
+    message = assert_names_host_and_model(e.value, host)
+    assert "timed out after 0.5 s" in message and "PITCH_AGENT_LLM_TIMEOUT" in message
+    assert "ollama serve" not in message
+
+
+@pytest.mark.parametrize("value", ["15m", "0", "-5", "inf", "nan"])
+def test_invalid_timeout_is_config_error(value):
+    with pytest.raises(ConfigError) as e:
+        OllamaLLM(MODEL, env={"PITCH_AGENT_LLM_TIMEOUT": value})
+    assert "PITCH_AGENT_LLM_TIMEOUT" in str(e.value) and repr(value) in str(e.value)

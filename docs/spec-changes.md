@@ -2,6 +2,18 @@
 
 Behaviour changes to a committed spec are logged here, newest first. Each entry names the spec, the baseline commit, what changed and why.
 
+## 2026-11-27 — 001-visit-card-agent: PR #1 review (Ollama errors)
+
+- **Spec**: `specs/001-visit-card-agent/contracts/llm-interface.md`, `specs/001-visit-card-agent/contracts/cli.md`
+- **Baseline**: commit `fc519ac`
+- **Source**: Codex review of PR #1 (also found by `/code-review`); each finding reproduced before the fix. `spec.md` is unchanged.
+
+| Area | Before | After | Reason |
+|---|---|---|---|
+| Invalid `PITCH_AGENT_LLM_TIMEOUT` | Undefined; `15m` crashed the CLI with a traceback, `0`, negative, `inf` and `nan` were accepted | Must be a positive, finite number; otherwise `ConfigError` naming the variable, shown by the CLI as a usage error (exit 2) | Actionable message instead of a traceback or a misleading failure |
+| Connection lost mid-response | Undefined; `RemoteDisconnected` / `IncompleteRead` escaped as a traceback | `LLMError` with the hint to check that Ollama is still running; the CLI reports a generation failure (exit 1) | Ollama can be killed while generating (out of memory on a 16 GB machine) |
+| Timeout while connecting | Reported as "cannot connect … Is Ollama running?" | Reported as a timeout with the `PITCH_AGENT_LLM_TIMEOUT` hint | The contract already required the timeout hint; urllib wraps a connect timeout in `URLError` |
+
 ## 2026-11-26 — 001-visit-card-agent: first local-model run (T053)
 
 - **Spec**: `specs/001-visit-card-agent/spec.md`
