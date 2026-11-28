@@ -539,3 +539,41 @@ def test_tc_v21_labels_validated_from_the_hashed_bytes(fixture_data_dir, tmp_pat
     monkeypatch.setattr(labels_module, "read_bytes", read_then_edit)
     run = run_evaluation(fixture_data_dir, path, tmp_path / "runs", llm, now=NOW, progress=io.StringIO())
     assert run.metadata.labels_sha256 == original and len(run.cases) == 3
+
+
+# --- Codex review of PR #3 ----------------------------------------------------------------
+
+
+def test_tc_v20_ctrl_c_right_after_the_first_rename(fixture_data_dir, tmp_path, use_llm, llm, monkeypatch):
+    real = Path.replace
+
+    def replace_then_interrupt(self, target):
+        real(self, target)
+        raise KeyboardInterrupt
+
+    use_llm(llm)
+    monkeypatch.setattr(Path, "replace", replace_then_interrupt)
+    assert cli.main(eval_args(fixture_data_dir, tmp_path)) == 130
+    run_dir = next((tmp_path / "runs").iterdir())
+    assert sorted(p.name for p in run_dir.iterdir()) == ["cards"]
+
+
+def test_tc_v22_id_with_pipe_space_and_hash(tmp_data_dir, tmp_path, evaluate, llm):
+    from urllib.parse import unquote
+
+    odd = "F|0 1#x"
+    for name in ("processed/restaurants.csv", "processed/reviews.csv"):
+        path = tmp_data_dir / name
+        path.write_text(path.read_text(encoding="utf-8").replace("F01,", f"{odd},"), encoding="utf-8")
+    labels = tmp_path / "labels.csv"
+    labels.write_text((LABELS / "valid.csv").read_text(encoding="utf-8").replace("F01,", f"{odd},", 1),
+                      encoding="utf-8")
+    run = run_evaluation(tmp_data_dir, labels, tmp_path / "runs", llm, now=NOW, progress=io.StringIO())
+    md = report_md(run).splitlines()
+    header = next(line for line in md if line.startswith("| Restaurant |"))
+    row = next(line for line in md if line.startswith("| F\\|0 1#x |"))
+    cells = lambda line: len(line.replace("\\|", "").split("|")) - 2
+    assert cells(row) == cells(header) == 9
+    targets = [part.split(")")[0] for part in row.split("](")[1:]]
+    assert len(targets) == 2 and all(" " not in t and "#" not in t and "|" not in t for t in targets)
+    assert all((run.run_dir / unquote(t)).is_file() for t in targets)

@@ -198,12 +198,13 @@ At each **Checkpoint**: run `uv run pytest` (all tests must pass), stop, wait fo
 - [X] T064a [US3] Write test TC-D20 in `tests/unit/test_loaders.py`, confirm it fails, then make the CSV reader in `src/pitch_agent/loaders.py` accept a UTF-8 byte order mark and turn a non-UTF-8 file into a `LoadError` (shared with the gold-label reader)
 - [X] T064b [US3] Write test TC-D21 in `tests/unit/test_loaders.py`, confirm it fails, then make `load_restaurants` in `src/pitch_agent/loaders.py` reject a `restaurant_id` that contains `/` or `\` or is `.` or `..` (found by `/code-review`: such an ID made `eval` write card files outside the run folder)
 - [X] T064c [US3] Write tests TC-G19, TC-D20 (c), TC-V19 – TC-V21, confirm they fail, then fix them in `src/pitch_agent/loaders.py`, `src/pitch_agent/evaluation/labels.py`, `runner.py` and `report.py` (found by the second `/code-review`: CSV parse errors, a failed `cards/` folder, a half-written report, the gold-label hash)
+- [X] T064d [US3] Write tests TC-V20 (b) and TC-V22, confirm they fail, then fix `src/pitch_agent/evaluation/report.py` (found by the Codex review of PR #3: a report file renamed just before Ctrl+C was left behind; `|`, spaces and `#` in an ID broke the report table and card links)
 
 ### Real-data files (section O, rest)
 
 - [X] T064 [P] [US3] Write tests TC-X01–TC-X03 in `tests/regression/test_real_data_files.py` against `data/products/` and `data/eval/expected.csv`; they should pass with T013 and T056 in place
 
-**Checkpoint**: Evaluation works with the mock — run all tests and quickstart step 3 (`eval`), run `/code-review`, stop for owner review, propose a commit message (T054–T064c).
+**Checkpoint**: Evaluation works with the mock — run all tests and quickstart step 3 (`eval`), run `/code-review`, stop for owner review, propose a commit message (T054–T064d).
 
 ---
 

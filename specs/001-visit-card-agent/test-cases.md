@@ -345,8 +345,9 @@ Synthetic results for three restaurants unless stated.
 | TC-V17 | FR-032 | (a) Only untracked files changed; (b) git not available | (a) `git_dirty` false; (b) `git_commit` `unknown`, `git_dirty` null |
 | TC-V18 | Edge case | `--mock-responses` file missing or not valid JSON, for `card` and `eval` | Usage error naming the file; exit 2 |
 | TC-V19 | Edge case | The `cards/` folder cannot be created: (a) an OS error; (b) Ctrl+C | (a) Error on stderr, exit 1; (b) "no run folder was created", exit 130; both: no run folder left, stub not called |
-| TC-V20 | Edge case | Writing the report stops after `report.json` is in place and before `report.md` is | Neither report file left; exit 1 |
+| TC-V20 | Edge case | Writing the report stops after `report.json` is in place and before `report.md` is: (a) an OS error; (b) Ctrl+C right after `report.json` is renamed | Neither report file left; (a) exit 1; (b) exit 130 |
 | TC-V21 | FR-032 | The gold-label file is changed or deleted after it was validated | The run completes; `labels_sha256` is the hash of the content that was validated |
+| TC-V22 | Edge case | Labelled restaurant with ID `F\|0 1#x` | Its `report.md` row has 9 cells; card links point to the existing files |
 
 ## O. Real-data regression (L3)
 

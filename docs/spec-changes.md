@@ -24,6 +24,8 @@ Behaviour changes to a committed spec are logged here, newest first. Each entry 
 | `cards/` folder cannot be created (evaluation report contract) | Traceback; empty run folder left | Exit 1 (Ctrl+C: 130, "no run folder was created"); the run folder this run created is removed. TC-V19, T064c | Second `/code-review`, reproduced |
 | Report stops between `report.json` and `report.md` | `report.json` alone left | Neither file left ("both or neither"). TC-V20, T064c | Second `/code-review`, reproduced |
 | Gold-label hash (FR-032) | File read again for the hash | Read once; hash of the validated bytes. TC-V21, T064c | Second `/code-review`, reproduced |
+| Report cleanup on Ctrl+C (evaluation report contract) | A file renamed just before Ctrl+C could be left | Both final report paths removed on any failure. TC-V20 (b), T064d | Codex review of PR #3, reproduced |
+| `report.md` table cells and card links (evaluation report contract) | Values inserted as is; `\|` split the row, spaces and `#` broke links | `\|` escaped, link targets percent-encoded. TC-V22, T064d | Codex review of PR #3, reproduced |
 
 ## 2026-11-27 — 001-visit-card-agent: PR #1 review (Ollama errors)
 

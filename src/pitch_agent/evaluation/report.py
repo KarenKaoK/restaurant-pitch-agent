@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 from dataclasses import asdict
 from pathlib import Path
+from urllib.parse import quote
 
 from pitch_agent.render import render_text
 
@@ -58,6 +59,11 @@ def _list(items) -> str:
     return ", ".join(items) if items else "—"
 
 
+def _cell(value) -> str:
+    """A Markdown table cell: an unescaped ``|`` would split the row."""
+    return str(value).replace("|", "\\|")
+
+
 def _commit(metadata) -> str:
     if metadata.git_dirty is None:
         return f"{metadata.git_commit} (changes unknown)"
@@ -96,11 +102,13 @@ def _report_md(metadata, cases, metrics) -> str:
     for case in cases:
         failed = sum(1 for c in case.checks if not c.passed)
         files = _card_files(case.restaurant_id)
-        card = f"[json]({files['json']}) · [text]({files['text']})" if case.card is not None else "—"
+        card = (f"[json]({quote(files['json'])}) · [text]({quote(files['text'])})" if case.card is not None
+                else "—")
         match = "yes" if case.actual_decision == case.expected_decision else "no"
-        lines.append(f"| {case.restaurant_id} | {case.expected_decision} | {case.actual_decision} | {match} "
-                     f"| {_list(case.recommended_products)} | {_list(case.missed_must_include)} "
-                     f"| {_list(case.outside_expected)} | {failed} | {card} |")
+        cells = [case.restaurant_id, case.expected_decision, case.actual_decision, match,
+                 _list(case.recommended_products), _list(case.missed_must_include), _list(case.outside_expected),
+                 failed]
+        lines.append("| " + " | ".join(map(_cell, cells)) + f" | {card} |")
     lines += ["", "## Check failures", ""]
     failing = [c for c in cases if any(not check.passed for check in c.checks)]
     if not failing:
@@ -122,16 +130,14 @@ def write_report(run_dir, metadata, cases, metrics) -> None:
         "report.md": _report_md(metadata, cases, metrics),
     }
     temporary = {name: run_dir / f".{name}.tmp" for name in texts}
-    renamed = []
     try:
         for name, text in texts.items():
             temporary[name].write_text(text, encoding="utf-8")
         for name, path in temporary.items():
             path.replace(run_dir / name)
-            renamed.append(run_dir / name)
-    except BaseException:  # also Ctrl+C between the two renames
-        for path in renamed:
-            path.unlink(missing_ok=True)
+    except BaseException:  # also Ctrl+C between or right after a rename; the run folder is new,
+        for name in texts:  # so any report file in it was written by this call
+            (run_dir / name).unlink(missing_ok=True)
         raise
     finally:
         for path in temporary.values():

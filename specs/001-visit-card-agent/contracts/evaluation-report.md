@@ -72,7 +72,7 @@ Sections, in order:
 
 1. **Run**: run ID, date, git commit (+ "uncommitted changes" if dirty), provider, model, gold-label file and hash.
 2. **Summary**: a table with SC-001 – SC-005 — value, target, met / not met / n/a. SC-006 is shown as "human review".
-3. **Per restaurant**: one row per labelled restaurant — expected decision, actual decision, match, recommended products, missed `must_include`, products outside `must_include` ∪ `acceptable`, number of failed checks, links to the card files.
+3. **Per restaurant**: one row per labelled restaurant — expected decision, actual decision, match, recommended products, missed `must_include`, products outside `must_include` ∪ `acceptable`, number of failed checks, links to the card files. A `|` in a cell is escaped (`\|`) and link targets are percent-encoded, so an ID with `|`, spaces or `#` keeps its row and its links.
 4. **Check failures**: for each card with a failed check, the check number and reason(s).
 5. **Unlabelled restaurants**: restaurants in the dataset but not in the gold labels (not evaluated).
 
