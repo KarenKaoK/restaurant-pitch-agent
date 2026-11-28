@@ -375,3 +375,47 @@ def test_mapping_category_without_id(tmp_data_dir):
     with pytest.raises(LoadError) as e:
         load_agent_data(tmp_data_dir)
     assert "#4" in str(e.value) and "category_id" in str(e.value)
+
+
+
+def test_tc_d20_byte_order_mark_is_accepted(tmp_data_dir):
+    path = tmp_data_dir / "processed" / "restaurants.csv"
+    path.write_bytes(b"\xef\xbb\xbf" + path.read_bytes())
+    assert load_agent_data(tmp_data_dir).get_restaurant("F01").name == "Fixture Bistro"
+
+
+def test_tc_d20_file_not_utf8_is_load_error(tmp_data_dir):
+    path = tmp_data_dir / "processed" / "reviews.csv"
+    path.write_bytes((path.read_text(encoding="utf-8") + "F01-099,F01,Café without card terminal,original,,,,,"
+                      "google,https://example.com/r/99\n").encode("latin-1"))
+    with pytest.raises(LoadError) as e:
+        load_agent_data(tmp_data_dir)
+    assert "reviews.csv" in str(e.value) and "not UTF-8" in str(e.value)
+
+
+@pytest.mark.parametrize("rid", ["A/B", "..\\x", "..", "."])
+def test_tc_d21_restaurant_id_unusable_as_file_name(tmp_data_dir, rid):
+    path = tmp_data_dir / "processed" / "restaurants.csv"
+    path.write_text(path.read_text(encoding="utf-8") + f"{rid},Bad Id,Testcity,,unknown,independent\n",
+                    encoding="utf-8")
+    rows = path.read_text(encoding="utf-8").splitlines()
+    with pytest.raises(LoadError) as e:
+        load_agent_data(tmp_data_dir)
+    message = str(e.value)
+    assert "restaurants.csv" in message and f"row {len(rows)}" in message and repr(rid) in message
+
+
+def test_tc_d21_ordinary_ids_still_load(tmp_data_dir):
+    path = tmp_data_dir / "processed" / "restaurants.csv"
+    path.write_text(path.read_text(encoding="utf-8") + "R-1.v2_x,Fine Id,Testcity,,unknown,independent\n",
+                    encoding="utf-8")
+    assert load_agent_data(tmp_data_dir).get_restaurant("R-1.v2_x").name == "Fine Id"
+
+
+def test_tc_d20_file_the_csv_reader_cannot_parse(tmp_data_dir):
+    path = tmp_data_dir / "processed" / "reviews.csv"
+    path.write_text(path.read_text(encoding="utf-8") + 'F01-099,F01,"' + "x" * 200_000 + '",original,,,,,'
+                    "google,https://example.com/r/99\n", encoding="utf-8")
+    with pytest.raises(LoadError) as e:
+        load_agent_data(tmp_data_dir)
+    assert "reviews.csv" in str(e.value) and "invalid CSV" in str(e.value)

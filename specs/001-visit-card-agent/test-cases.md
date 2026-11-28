@@ -109,6 +109,8 @@ Notation used below: `PP(category, [review IDs])` is a pain point; `cand(product
 | TC-D17 | FR-002a | Review `F99-001` with `restaurant_id` = `F99` (not in restaurants) | Load error naming `reviews.csv`, the row and "unknown restaurant_id" |
 | TC-D18 | FR-002a | (a) Review with `text_source` = `machine`; (b) restaurant with `segment` = `franchise` | Each: load error naming the file, the row and the invalid value |
 | TC-D19 | FR-002a | (a) Reviews file without the `text_source` column; (b) restaurant with an empty `name`; (c) review with an empty `source_url`; (d) review with an empty `review_date` and `rating` | (a)–(c): load error naming the file, the row (if any) and the missing column or value; (d): loads (dates and ratings not validated) |
+| TC-D20 | FR-002a | (a) Restaurants file with a UTF-8 byte order mark; (b) reviews file in Latin-1 with a non-ASCII character | (a) loads like TC-D01; (b) load error naming `reviews.csv` and "not UTF-8"; (c) a reviews file the CSV reader cannot parse: load error naming `reviews.csv` and "invalid CSV" |
+| TC-D21 | FR-002a | Restaurant with `restaurant_id` (a) `A/B`; (b) `..\x`; (c) `..`; (d) `.` | Each: load error naming `restaurants.csv`, the row and the invalid ID |
 
 ## B. Eligibility and short cards (L1)
 
@@ -293,6 +295,13 @@ Each check gets one passing card and at least one failing card. "Valid card" mea
 | TC-G10 | FR-028 | Decision `insufficient_evidence` with `must_include` = dish-pos | Invalid row: must_include without `recommend` |
 | TC-G11 | FR-028 | File with three different invalid rows | All three listed, each with its reason (validation does not stop at the first error) |
 | TC-G12 | FR-028 | `no_recommendation` or `insufficient_evidence` with blank product lists; `recommend` with blank `must_include` | Valid |
+| TC-G13 | FR-028 | Gold-label path that does not exist | File rejected: error naming the path |
+| TC-G14 | FR-028 | Valid file with a UTF-8 byte order mark (Excel) | Loads like TC-G01 |
+| TC-G15 | FR-028 | File in Latin-1 with a non-ASCII character | File rejected: "not UTF-8" |
+| TC-G16 | FR-027 | `must_include` = ` dish-pay ; dish-pos;` | Parsed as dish-pay, dish-pos |
+| TC-G17 | FR-028 | `acceptable` = `dish-pos;dish-pos` | Invalid row: product repeated |
+| TC-G18 | FR-028 | Header row only | File rejected: no labelled restaurants |
+| TC-G19 | FR-028 | File that the CSV reader cannot parse (a field longer than its limit) | File rejected: "invalid CSV", naming the path |
 
 ## M. Metrics (L1)
 
@@ -311,6 +320,7 @@ Synthetic results for three restaurants unless stated.
 | TC-M09a | SC-004 | must_include {ai-phone, reservation}; card: primary ai-phone, prerequisite reservation | 2/2 hit (prerequisites count) |
 | TC-M09b | SC-005 | must_include {ai-phone}, acceptable {}; card: primary ai-phone, prerequisite reservation | Restaurant counted (reservation is outside the lists) |
 | TC-M10 | Edge case | Agent failed for one restaurant | Counts as failing check 1 (SC-001) and as a decision mismatch (SC-003) |
+| TC-M11 | Edge case | No closed/chain restaurant; no `must_include` product | SC-002 and SC-004: value `0/0`, percent and met null |
 
 ## N. Evaluation run (L2)
 
@@ -325,6 +335,19 @@ Synthetic results for three restaurants unless stated.
 | TC-V07 | FR-032 | Any run | Generated cards included or referenced |
 | TC-V08 | FR-033 | Any run | Gold-label file and raw data unchanged (content identical before and after) |
 | TC-V09 | FR-028 | Gold labels with one invalid row | Invalid row listed; evaluation stops; agent (stub) never called; no metrics or report of results produced |
+| TC-V10 | Edge case | `--data-dir` with an invalid mapping file | Load error on stderr; exit 2; stub not called; no run folder |
+| TC-V11 | Edge case | `--out-dir` that does not exist | Created; run completes |
+| TC-V12 | Edge case | `--out-dir` that is a file | Error on stderr; exit 1; stub not called |
+| TC-V13 | FR-033 | `--out-dir` inside the data folder | Usage error; exit 2; stub not called; nothing written |
+| TC-V14 | Edge case | Run folder for the same timestamp already exists | Error; existing folder unchanged; exit 1; stub not called |
+| TC-V15 | Edge case | Ctrl+C while generating the last of 3 restaurants | The first two cards' files kept; no report; stderr names the incomplete run folder; exit 130 |
+| TC-V16 | Edge case | Unexpected (non-generation) error for a restaurant | Run stops; no report; message on stderr; exit 1 |
+| TC-V17 | FR-032 | (a) Only untracked files changed; (b) git not available | (a) `git_dirty` false; (b) `git_commit` `unknown`, `git_dirty` null |
+| TC-V18 | Edge case | `--mock-responses` file missing or not valid JSON, for `card` and `eval` | Usage error naming the file; exit 2 |
+| TC-V19 | Edge case | The `cards/` folder cannot be created: (a) an OS error; (b) Ctrl+C | (a) Error on stderr, exit 1; (b) "no run folder was created", exit 130; both: no run folder left, stub not called |
+| TC-V20 | Edge case | Writing the report stops after `report.json` is in place and before `report.md` is: (a) an OS error; (b) Ctrl+C right after `report.json` is renamed | Neither report file left; (a) exit 1; (b) exit 130 |
+| TC-V21 | FR-032 | The gold-label file is changed or deleted after it was validated | The run completes; `labels_sha256` is the hash of the content that was validated |
+| TC-V22 | Edge case | Labelled restaurant with ID `F\|0 1#x` | Its `report.md` row has 9 cells; card links point to the existing files |
 
 ## O. Real-data regression (L3)
 

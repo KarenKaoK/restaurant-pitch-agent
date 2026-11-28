@@ -1,0 +1,2 @@
+restaurant_id,decision,must_include,acceptable,rationale
+F01,insufficient_evidence,dish-pos,,must_include without recommend

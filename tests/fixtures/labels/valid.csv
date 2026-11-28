@@ -1,0 +1,4 @@
+restaurant_id,decision,must_include,acceptable,rationale
+F01,recommend,dish-pay;dish-pos,,Cash only and slow kitchen
+F02,no_recommendation,,,Closed
+F05,insufficient_evidence,,,No reviews

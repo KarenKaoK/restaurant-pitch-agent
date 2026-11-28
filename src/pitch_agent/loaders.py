@@ -6,6 +6,7 @@ The agent reads only ``data_dir/processed/`` and ``data_dir/products/`` (researc
 from __future__ import annotations
 
 import csv
+import io
 import json
 from dataclasses import dataclass
 from pathlib import Path
@@ -39,17 +40,32 @@ class UnknownRestaurantError(LookupError):
 # ---------------------------------------------------------------------------
 
 
-def _read_csv(path: Path, required: tuple[str, ...]) -> list[tuple[int, dict[str, str]]]:
-    """Return ``(row_number, row)`` pairs; the header is row 1."""
+def read_bytes(path: Path, name: str | None = None) -> bytes:
     try:
-        with open(path, newline="", encoding="utf-8") as f:
-            reader = csv.DictReader(f)
-            missing = [c for c in required if c not in (reader.fieldnames or [])]
-            if missing:
-                raise LoadError(f"{path.name}: missing column(s): {', '.join(missing)}")
-            rows = list(reader)
+        return Path(path).read_bytes()
     except OSError as e:
-        raise LoadError(f"{path.name}: cannot read file: {e}") from e
+        raise LoadError(f"{name or Path(path).name}: cannot read file: {e}") from e
+
+
+def _read_csv(path: Path, required: tuple[str, ...], name: str | None = None,
+              content: bytes | None = None) -> list[tuple[int, dict[str, str]]]:
+    """Return ``(row_number, row)`` pairs; the header is row 1.
+
+    UTF-8 only; a byte order mark (as written by Excel) is accepted. Errors name the
+    file as ``name`` (default: the file name). ``content`` is the file's bytes if the
+    caller has already read them."""
+    name = name or path.name
+    content = read_bytes(path, name) if content is None else content
+    try:
+        reader = csv.DictReader(io.StringIO(content.decode("utf-8-sig"), newline=""))
+        missing = [c for c in required if c not in (reader.fieldnames or [])]
+        if missing:
+            raise LoadError(f"{name}: missing column(s): {', '.join(missing)}")
+        rows = list(reader)
+    except UnicodeDecodeError as e:
+        raise LoadError(f"{name}: not UTF-8 ({e.reason} at byte {e.start})") from e
+    except csv.Error as e:
+        raise LoadError(f"{name}: invalid CSV ({e})") from e
     return [(i + 2, {k: (v or "") for k, v in row.items() if k is not None}) for i, row in enumerate(rows)]
 
 
@@ -67,6 +83,11 @@ def load_restaurants(path: Path) -> dict[str, Restaurant]:
         rid = row["restaurant_id"]
         if rid in restaurants:
             raise LoadError(f"{path.name} row {row_number}: duplicate restaurant_id '{rid}'")
+        if "/" in rid or "\\" in rid or rid in (".", ".."):
+            raise LoadError(
+                f"{path.name} row {row_number}: invalid restaurant_id {rid!r} "
+                "(it names card files: no '/' or '\\', not '.' or '..')"
+            )
         if row["segment"] not in SEGMENTS:
             raise LoadError(
                 f"{path.name} row {row_number}: invalid segment '{row['segment']}' "

@@ -1,0 +1,2 @@
+restaurant_id,decision,must_include,acceptable,rationale
+F01,recommend,dish-pay,dish-pay;dish-pos,dish-pay in both lists
