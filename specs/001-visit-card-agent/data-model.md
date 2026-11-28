@@ -10,7 +10,7 @@ In-memory types are Python dataclasses (frozen where practical). The card's JSON
 
 | Field | Type | Rule |
 |---|---|---|
-| `restaurant_id` | str | Unique; required |
+| `restaurant_id` | str | Unique; required; must not contain `/` or `\` and must not be `.` or `..`, because it names the card files of a run (load error otherwise, FR-002a) |
 | `name` | str | Required |
 | `city` | str | Required |
 | `address` | str | May be empty; not shown on the card |
@@ -69,7 +69,7 @@ The file's top-level `rules` object is sent to the model as classification guida
 | `acceptable` | list[str] | `;`-separated; may be empty; each a catalog product; no overlap with `must_include` |
 | `rationale` | str | Free text |
 
-Missing columns reject the whole file. Validation collects **all** invalid rows (`LabelError(row_number, restaurant_id, reason)`) before stopping (TC-G11).
+Lists: spaces around IDs and empty items are ignored; the same product twice in one list is an invalid row. A missing, unreadable or non-UTF-8 file (a UTF-8 byte order mark is accepted), missing columns or no data rows reject the whole file. Validation collects **all** invalid rows (`LabelError(row_number, restaurant_id, reason)`) before stopping (TC-G11).
 
 ## Intermediate entity: ModelAnalysis (parsed model output)
 
@@ -226,6 +226,7 @@ All 18 checks always run; a failure in one does not stop the others (TC-K19). If
 | `error` | str \| null |
 | `checks` | list[CheckResult] (on generation failure: check 1 fails with the error; checks 2–18 fail with the reason "not evaluated: generation failed") |
 | `expected_decision`, `actual_decision` | str (actual is `error` on generation failure) |
+| `must_include` | list[str] (from the gold label; denominator of SC-004) |
 | `recommended_products` | list[str] (primary + prerequisite) |
 | `missed_must_include` | list[str] |
 | `outside_expected` | list[str] (recommended products not in `must_include` ∪ `acceptable`) |
@@ -240,6 +241,8 @@ All 18 checks always run; a failure in one does not stop the others (TC-K19). If
 | SC-004 | `must_include` products recommended (primary or prerequisite) / all `must_include` products | ≥ 80% |
 | SC-005 | Restaurants with ≥ 1 recommended product outside `must_include` ∪ `acceptable` | ≤ 1 |
 
+A ratio metric whose denominator is 0 (SC-002 without closed/chain restaurants, SC-004 without `must_include` products) has value `0/0`, `percent` = null and `met` = null ("n/a").
+
 ### RunMetadata
 
-`run_id` (UTC timestamp), `git_commit`, `git_dirty`, `provider`, `model`, `run_date`, `labels_path`, `labels_sha256`, `unlabelled_restaurants` (in the dataset but not in the labels, TC-V03).
+`run_id` (UTC timestamp), `git_commit` (`unknown` without git), `git_dirty` (uncommitted changes to tracked files; untracked files do not count; null without git) — both read when the run starts, for the repository that contains the running code, `provider`, `model`, `run_date`, `labels_path`, `labels_sha256` (of the file as validated, before the first model call), `unlabelled_restaurants` (in the dataset but not in the labels, TC-V03).

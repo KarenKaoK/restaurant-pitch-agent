@@ -1,0 +1,5 @@
+restaurant_id,decision,must_include,acceptable,rationale
+F99,insufficient_evidence,,,Unknown restaurant
+F02,no_recommendation,,,Valid row
+F01,yes,,,Invalid decision
+F05,insufficient_evidence,dish-pos,,must_include without recommend

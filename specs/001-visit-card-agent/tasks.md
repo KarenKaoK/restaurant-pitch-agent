@@ -176,28 +176,34 @@ At each **Checkpoint**: run `uv run pytest` (all tests must pass), stop, wait fo
 
 ### Gold labels (section L)
 
-- [ ] T054 [P] [US3] Create gold-label fixtures in `tests/fixtures/labels/` for TC-G01–TC-G12 and TC-V01–TC-V09 (header `restaurant_id,decision,must_include,acceptable,rationale`; one file per invalid case, one file with three invalid rows for TC-G11, one valid file over F01, F02, F05 for the evaluation tests)
-- [ ] T055 [US3] Write tests TC-G01–TC-G12 in `tests/unit/test_labels.py` for `load_gold_labels(path, restaurants, catalog)`. Confirm they fail
-- [ ] T056 [US3] Implement `src/pitch_agent/evaluation/labels.py` until T055 passes: `GoldLabel` (data-model.md `GoldLabel.restaurant_id`, `GoldLabel.decision`, `GoldLabel.must_include`, `GoldLabel.acceptable`, `GoldLabel.rationale`), `;`-separated lists, missing columns reject the file, all invalid rows collected as `LabelError(row_number, restaurant_id, reason)` before raising
+- [X] T054 [P] [US3] Create gold-label fixtures in `tests/fixtures/labels/` for TC-G01–TC-G18 and TC-V01–TC-V18 (header `restaurant_id,decision,must_include,acceptable,rationale`; one file per invalid case, one file with three invalid rows for TC-G11, one valid file over F01, F02, F05 for the evaluation tests)
+- [X] T055 [US3] Write tests TC-G01–TC-G18 in `tests/unit/test_labels.py` for `load_gold_labels(path, restaurants, catalog)`. Confirm they fail
+- [X] T056 [US3] Implement `src/pitch_agent/evaluation/labels.py` until T055 passes: `GoldLabel` (data-model.md `GoldLabel.restaurant_id`, `GoldLabel.decision`, `GoldLabel.must_include`, `GoldLabel.acceptable`, `GoldLabel.rationale`), `;`-separated lists, missing columns reject the file, all invalid rows collected as `LabelError(row_number, restaurant_id, reason)` before raising
 
 ### Metrics (section M)
 
-- [ ] T057 [P] [US3] Write tests TC-M01–TC-M10 in `tests/unit/test_metrics.py` for `compute_metrics(case_results, restaurants)` using synthetic `CaseResult` values. Confirm they fail
-- [ ] T058 [US3] Implement `CaseResult` and `compute_metrics` in `src/pitch_agent/evaluation/metrics.py` until T057 passes (data-model.md `CaseResult.restaurant_id`, `CaseResult.card`, `CaseResult.error`, `CaseResult.checks`, `CaseResult.expected_decision`, `CaseResult.actual_decision`, `CaseResult.recommended_products`, `CaseResult.missed_must_include`, `CaseResult.outside_expected`; metric definitions and targets in data-model.md "Metrics (SC-001 – SC-005)"; output shape of contracts/evaluation-report.md `metrics`)
+- [X] T057 [P] [US3] Write tests TC-M01–TC-M11 in `tests/unit/test_metrics.py` for `compute_metrics(case_results, restaurants)` using synthetic `CaseResult` values. Confirm they fail
+- [X] T058 [US3] Implement `CaseResult` and `compute_metrics` in `src/pitch_agent/evaluation/metrics.py` until T057 passes (data-model.md `CaseResult.restaurant_id`, `CaseResult.card`, `CaseResult.error`, `CaseResult.checks`, `CaseResult.expected_decision`, `CaseResult.actual_decision`, `CaseResult.recommended_products`, `CaseResult.missed_must_include`, `CaseResult.outside_expected`; metric definitions and targets in data-model.md "Metrics (SC-001 – SC-005)"; output shape of contracts/evaluation-report.md `metrics`)
 
 ### Evaluation run (section N)
 
-- [ ] T059 [US3] Write tests TC-V01–TC-V09 in `tests/pipeline/test_evaluation.py` running the evaluation in-process and through `pitch-agent eval` with `--data-dir` fixtures, `--labels` from T054, `--out-dir` in `tmp_path` and the mock (TC-V08 compares SHA-256 of the label file and `data/raw/duesseldorf_reviews.csv` before and after; TC-V09 asserts the mock has no calls, no run folder and exit code 2). Confirm they fail
-- [ ] T060 [US3] Implement `run_evaluation(...)` in `src/pitch_agent/evaluation/runner.py`: validate labels first; one `generate_card` call per labelled restaurant; `run_checks` on every card; generation failure → check 1 failed with the error and checks 2–18 failed with the reason "not evaluated: generation failed" (data-model.md `CaseResult.checks`), `actual_decision` = `error`; progress line per restaurant on stderr; `RunMetadata` (data-model.md "RunMetadata": `run_id`, `git_commit` via `git rev-parse HEAD` or `unknown`, `git_dirty`, `provider`, `model` from the `LLMClient`, `run_date`, `labels_path`, `labels_sha256`, `unlabelled_restaurants`)
-- [ ] T061 [US3] Implement `write_report(...)` in `src/pitch_agent/evaluation/report.py`: `runs/<YYYYMMDDTHHMMSSZ>/report.json`, `report.md` (five sections in order) and `cards/<id>.json` + `cards/<id>.txt` per [contracts/evaluation-report.md](contracts/evaluation-report.md); nothing written under `data/`
-- [ ] T062 [US3] Add the `eval` subcommand (`--labels`, `--out-dir`) to `src/pitch_agent/cli.py` with the outputs and exit codes of contracts/cli.md, until T059 passes
-- [ ] T063 [P] [US3] Create `tests/fixtures/mock_responses/all.json` for quickstart step 3, containing at least the R03 response from T047 (restaurants not in the file get the mock's empty analysis)
+- [X] T059 [US3] Write tests TC-V01–TC-V18 in `tests/pipeline/test_evaluation.py` running the evaluation in-process and through `pitch-agent eval` with `--data-dir` fixtures, `--labels` from T054, `--out-dir` in `tmp_path` and the mock (TC-V08 compares SHA-256 of the label file and `data/raw/duesseldorf_reviews.csv` before and after; TC-V09 asserts the mock has no calls, no run folder and exit code 2). Confirm they fail
+- [X] T060 [US3] Implement `run_evaluation(...)` in `src/pitch_agent/evaluation/runner.py`: validate labels first; one `generate_card` call per labelled restaurant; `run_checks` on every card; generation failure → check 1 failed with the error and checks 2–18 failed with the reason "not evaluated: generation failed" (data-model.md `CaseResult.checks`), `actual_decision` = `error`; progress line per restaurant on stderr; `RunMetadata` (data-model.md "RunMetadata": `run_id`, `git_commit` via `git rev-parse HEAD` or `unknown`, `git_dirty`, `provider`, `model` from the `LLMClient`, `run_date`, `labels_path`, `labels_sha256`, `unlabelled_restaurants`); run folder lifecycle of contracts/evaluation-report.md (created before the first model call, cards written as generated, report last, no report on interruption or unexpected error); `--out-dir` inside the data folder refused
+- [X] T061 [US3] Implement `write_report(...)` in `src/pitch_agent/evaluation/report.py`: `runs/<YYYYMMDDTHHMMSSZ>/report.json`, `report.md` (five sections in order) and `cards/<id>.json` + `cards/<id>.txt` per [contracts/evaluation-report.md](contracts/evaluation-report.md); nothing written under `data/`
+- [X] T062 [US3] Add the `eval` subcommand (`--labels`, `--out-dir`) to `src/pitch_agent/cli.py` with the outputs and exit codes of contracts/cli.md (including exit 130 on Ctrl+C and the `--mock-responses` usage error for `card` and `eval`), until T059 passes
+- [X] T063 [P] [US3] Create `tests/fixtures/mock_responses/all.json` for quickstart step 3, containing at least the R03 response from T047 (restaurants not in the file get the mock's empty analysis)
+
+### Dataset encoding (section A, rest)
+
+- [X] T064a [US3] Write test TC-D20 in `tests/unit/test_loaders.py`, confirm it fails, then make the CSV reader in `src/pitch_agent/loaders.py` accept a UTF-8 byte order mark and turn a non-UTF-8 file into a `LoadError` (shared with the gold-label reader)
+- [X] T064b [US3] Write test TC-D21 in `tests/unit/test_loaders.py`, confirm it fails, then make `load_restaurants` in `src/pitch_agent/loaders.py` reject a `restaurant_id` that contains `/` or `\` or is `.` or `..` (found by `/code-review`: such an ID made `eval` write card files outside the run folder)
+- [X] T064c [US3] Write tests TC-G19, TC-D20 (c), TC-V19 – TC-V21, confirm they fail, then fix them in `src/pitch_agent/loaders.py`, `src/pitch_agent/evaluation/labels.py`, `runner.py` and `report.py` (found by the second `/code-review`: CSV parse errors, a failed `cards/` folder, a half-written report, the gold-label hash)
 
 ### Real-data files (section O, rest)
 
-- [ ] T064 [P] [US3] Write tests TC-X01–TC-X03 in `tests/regression/test_real_data_files.py` against `data/products/` and `data/eval/expected.csv`; they should pass with T013 and T056 in place
+- [X] T064 [P] [US3] Write tests TC-X01–TC-X03 in `tests/regression/test_real_data_files.py` against `data/products/` and `data/eval/expected.csv`; they should pass with T013 and T056 in place
 
-**Checkpoint**: Evaluation works with the mock — run all tests and quickstart step 3 (`eval`), stop for owner review, propose a commit message (T054–T064).
+**Checkpoint**: Evaluation works with the mock — run all tests and quickstart step 3 (`eval`), run `/code-review`, stop for owner review, propose a commit message (T054–T064c).
 
 ---
 

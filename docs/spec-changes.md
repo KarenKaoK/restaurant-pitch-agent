@@ -2,6 +2,29 @@
 
 Behaviour changes to a committed spec are logged here, newest first. Each entry names the spec, the baseline commit, what changed and why.
 
+## 2026-11-28 — 001-visit-card-agent: evaluation unhappy inputs (before Phase 6)
+
+- **Spec**: `specs/001-visit-card-agent/spec.md`, `data-model.md`, `contracts/cli.md`, `contracts/evaluation-report.md`, `test-cases.md`, `tasks.md`
+- **Baseline**: commit `4832590`
+- **Source**: unhappy inputs listed at every boundary of the evaluation before implementing Phase 6 (CLAUDE.md workflow); decided by the owner on 2026-11-28. Also recorded under "Clarifications" in the spec.
+
+| Area | Before | After | Reason |
+|---|---|---|---|
+| Gold-label file read (FR-028) | Only missing columns rejected the file | Also missing/unreadable, not UTF-8, or no data rows; a UTF-8 byte order mark is accepted. New TC-G13–G15, TC-G18 | Excel adds a byte order mark; clear errors instead of a traceback |
+| Product lists (FR-027, FR-028) | `;`-separated, nothing about spacing | Spaces and empty items ignored; a product twice in one list is an invalid row. TC-G16, TC-G17 | Hand-edited files |
+| Dataset encoding (FR-002a) | A non-UTF-8 file raised a traceback | Load error; byte order mark accepted. TC-D20 | Same reader as the gold labels |
+| Metric with denominator 0 | Undefined (division by zero) | `0/0`, percent and met null ("n/a"). TC-M11 | Small fixture sets |
+| Output folder (FR-033, evaluation report contract) | Undefined | Inside the data folder refused (exit 2); created before the first model call, so an unwritable location fails at once (exit 1); an existing run folder is never overwritten. TC-V11–V14 | A real run takes hours on the CPU-only machine |
+| Interruption and unexpected errors | Undefined | Cards written as generated and kept; no report; exit 130 (Ctrl+C) or 1. TC-V15, TC-V16 | Partial metrics mislead; finished cards are worth keeping |
+| `git_dirty` (FR-032) | Undefined | Tracked files only; null without git; commit and dirty flag read at run start for the repository of the running code; the gold-label hash taken before the first model call. TC-V17 | The untracked `scripts/` folder would mark every run dirty; a commit or label edit during a multi-hour run must not change what the report records (found by `/code-review`) |
+| `--mock-responses` file missing, invalid or not a JSON object | Traceback, exit 1 | Usage error naming the file, exit 2. TC-V18 | Open question from Phase 4 |
+| Data load error in `eval` | Not listed | Exit 2, as for `card`. TC-V10 | Consistency |
+| `restaurant_id` characters (FR-002a) | Any non-empty value | `/`, `\`, `.` and `..` rejected (load error). TC-D21, T064b | The ID names the card files; `../x` made `eval` write outside the run folder (found by `/code-review`, reproduced) |
+| CSV the reader cannot parse (FR-002a, FR-028) | Traceback | Load error "invalid CSV" (counts as an unreadable file). TC-G19, TC-D20 (c), T064c | Second `/code-review`, reproduced |
+| `cards/` folder cannot be created (evaluation report contract) | Traceback; empty run folder left | Exit 1 (Ctrl+C: 130, "no run folder was created"); the run folder this run created is removed. TC-V19, T064c | Second `/code-review`, reproduced |
+| Report stops between `report.json` and `report.md` | `report.json` alone left | Neither file left ("both or neither"). TC-V20, T064c | Second `/code-review`, reproduced |
+| Gold-label hash (FR-032) | File read again for the hash | Read once; hash of the validated bytes. TC-V21, T064c | Second `/code-review`, reproduced |
+
 ## 2026-11-27 — 001-visit-card-agent: PR #1 review (Ollama errors)
 
 - **Spec**: `specs/001-visit-card-agent/contracts/llm-interface.md`, `specs/001-visit-card-agent/contracts/cli.md`

@@ -35,6 +35,19 @@
 - Q: Who speaks in the opening pitch? → A: The rep, speaking to the owner or manager, reporting in the third person what guests say ("several guests mention…"). It is never written as a guest's own words. Discovery questions are likewise asked by the rep to the owner or manager, not to guests.
 - Q: Does the agent validate the restaurant and review datasets? → A: Yes, basic integrity only: required columns and values, unique IDs, allowed values and that every review belongs to a known restaurant (FR-002a). Review dates and ratings are not validated in v1.
 
+### Session 2026-11-28
+
+Unhappy inputs of the evaluation, listed before Phase 6 (owner decision 2026-11-28):
+
+- Q: How is the gold-label file read when it is missing, saved by Excel, or not UTF-8? → A: A missing or unreadable file, a file that is not UTF-8 and a file with no data rows are invalid as a whole (exit 2). A UTF-8 byte order mark is accepted. The restaurant and review datasets are read the same way.
+- Q: How are product lists written? → A: Spaces around product IDs and empty items (e.g. a trailing `;`) are ignored; the same product twice in one list makes the row invalid.
+- Q: What does a metric show when its denominator is 0 (no closed/chain restaurant, no `must_include` product)? → A: `0/0`, with no percentage and target status "n/a".
+- Q: Where may the run folder be written? → A: Anywhere except inside the data folder (FR-033, usage error). A missing output folder is created. The run folder is created after the gold labels are validated and before the first model call, so an unwritable location fails at once; an existing run folder is never overwritten.
+- Q: What happens when a run is interrupted (Ctrl+C) or hits an unexpected error? → A: Each card is written as soon as it is generated, so cards already produced are kept. No report is written, because partial metrics mislead. Only a generation failure counts as a failed case; any other error stops the run.
+- Q: Do untracked files make a run "dirty"? → A: No. Only uncommitted changes to tracked files count. Without git, the commit is `unknown` and the dirty flag is not known.
+- Q: What if the `--mock-responses` file is missing or not valid JSON? → A: Usage error naming the file (exit 2), for `card` and `eval`.
+- Q: What if a `restaurant_id` contains `/` or `..`? → A: The restaurant dataset is invalid (load error, exit 2). The ID names the card files in the run folder, so such an ID would write outside it (found by `/code-review`).
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - Generate a visit card (Priority: P1)
@@ -121,6 +134,10 @@ The project owner runs a single command that generates a visit card for every re
 - **Generation failure** (the model returns output that cannot be parsed, has the wrong shape — including a pain-point `ref` used more than once — or a call fails): the agent reports an error for that restaurant instead of producing a partial card; in evaluation, the card counts as failing the format check.
 - **Model output that parses but breaks the rules** (unknown category, non-verbatim quote, review from another restaurant): not a generation failure. Pain points with an unknown category are not merged. The card is produced as returned, without silent correction, and fails the relevant deterministic checks.
 - **Restaurant in the dataset but missing from the gold-label file**: not evaluated; the report lists it as unlabelled.
+- **Gold-label file saved by Excel** (UTF-8 byte order mark) or with spaces around product IDs: read normally. A file that is not UTF-8, is missing, or has no data rows: invalid as a whole.
+- **Metric with nothing to count** (no closed/chain restaurant, no `must_include` product): shown as `0/0`, "n/a".
+- **Output folder that cannot be written, or inside the data folder**: the evaluation stops before the first model call.
+- **Evaluation interrupted or stopped by an unexpected error**: cards generated so far are kept; no report is written.
 
 ## Requirements *(mandatory)*
 
@@ -130,7 +147,7 @@ The project owner runs a single command that generates a visit card for every re
 
 - **FR-001**: The agent MUST accept a single restaurant ID as input and produce one visit card for that restaurant.
 - **FR-002**: The agent MUST use only the processed restaurant dataset, the processed review dataset and the product catalog (including the pain-point category table, FR-013a) as inputs. It MUST NOT read raw data or anything in the evaluation folder (constitution Principle V).
-- **FR-002a**: The agent MUST stop with a load error naming the file, row and reason when the restaurant or review dataset is invalid: a missing column or empty required value (restaurant: `restaurant_id`, `name`, `city`, `status`, `segment`; review: `review_id`, `restaurant_id`, `text`, `text_source`, `platform`, `source_url`), a duplicate `restaurant_id` or `review_id`, a `segment` other than `independent` or `chain`, a `text_source` other than `original`, `translated` or `expanded`, or a review whose `restaurant_id` is not in the restaurant dataset. Review dates and ratings are not validated in v1.
+- **FR-002a**: The agent MUST stop with a load error naming the file, row and reason when the restaurant or review dataset is invalid: a missing column or empty required value (restaurant: `restaurant_id`, `name`, `city`, `status`, `segment`; review: `review_id`, `restaurant_id`, `text`, `text_source`, `platform`, `source_url`), a duplicate `restaurant_id` or `review_id`, a `restaurant_id` that contains `/` or `\` or is `.` or `..` (it names the card files of an evaluation run), a `segment` other than `independent` or `chain`, a `text_source` other than `original`, `translated` or `expanded`, or a review whose `restaurant_id` is not in the restaurant dataset. Review dates and ratings are not validated in v1. A file that is not UTF-8 is a load error; a UTF-8 byte order mark is accepted.
 - **FR-003**: The agent MUST use only the reviews whose restaurant ID matches the requested restaurant.
 - **FR-004**: If the restaurant ID does not exist, the agent MUST report this and MUST NOT produce a card.
 - **FR-005**: The agent MUST NOT store, display or log reviewer identity data.
@@ -200,13 +217,13 @@ The project owner runs a single command that generates a visit card for every re
 **Evaluation**
 
 - **FR-026**: The evaluation MUST be runnable with a single command.
-- **FR-027**: The evaluation MUST read gold labels from `data/eval/expected.csv` with the columns `restaurant_id`, `decision` (`recommend` / `no_recommendation` / `insufficient_evidence`), `must_include` (zero or more product IDs), `acceptable` (zero or more product IDs) and `rationale`. Multiple product IDs in one field are separated by `;`.
-- **FR-028**: The evaluation MUST validate the gold-label file before running the agent. A row is invalid if it has an unknown restaurant ID, an invalid decision value, an unknown product ID, a restaurant ID that already appears in another row, a product ID listed in both `must_include` and `acceptable`, or a non-empty `must_include` while the decision is not `recommend`. A file with missing columns is invalid as a whole. If anything is invalid, the evaluation MUST list every invalid row with its reason and stop without running the agent or computing metrics.
+- **FR-027**: The evaluation MUST read gold labels from `data/eval/expected.csv` with the columns `restaurant_id`, `decision` (`recommend` / `no_recommendation` / `insufficient_evidence`), `must_include` (zero or more product IDs), `acceptable` (zero or more product IDs) and `rationale`. Multiple product IDs in one field are separated by `;`; spaces around IDs and empty items are ignored.
+- **FR-028**: The evaluation MUST validate the gold-label file before running the agent. A row is invalid if it has an unknown restaurant ID, an invalid decision value, an unknown product ID, a restaurant ID that already appears in another row, a product ID listed in both `must_include` and `acceptable`, a non-empty `must_include` while the decision is not `recommend`, or the same product twice in one list. A file that is missing, unreadable, not UTF-8 (a byte order mark is allowed), has missing columns or has no data rows is invalid as a whole. If anything is invalid, the evaluation MUST list every invalid row with its reason and stop without running the agent or computing metrics.
 - **FR-029**: The evaluation MUST run the agent exactly once per labelled restaurant.
 - **FR-030**: The evaluation MUST run all FR-025 checks on every card and report pass/fail per check per card.
 - **FR-031**: The evaluation MUST compute and report the metrics in SC-001 – SC-005 and whether each target is met.
 - **FR-032**: The evaluation report MUST record the git commit, the LLM provider, the model name and the run date, and MUST include the generated cards (or a reference to them) so results can be reviewed.
-- **FR-033**: The evaluation MUST NOT modify raw data or the gold-label file.
+- **FR-033**: The evaluation MUST NOT modify raw data or the gold-label file. It MUST refuse an output folder inside the data folder.
 
 ### Key Entities
 
